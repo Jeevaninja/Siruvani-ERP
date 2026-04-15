@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siruvani Bar — Management ERP v2</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#0f1117;--bg1:#1a1d27;--bg2:#22263a;--bg3:#2a2e42;
+  --bd:#2e3248;--bd2:#3a3f5c;
+  --t0:#e8eaf0;--t1:#9ba3c0;--t2:#5a6080;
+  --grn:#22c55e;--gbd:#0d2318;--gdm:#16a34a;
+  --blu:#60a5fa;--bbd:#0d1b38;
+  --amb:#f59e0b;--abd:#1f1400;
+  --red:#f87171;--rbd:#1f0d0d;
+  --r:10px;--rs:7px
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg0);color:var(--t0);font-size:13px;min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg1)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+
+/* ── AUTH ─────────────────────────── */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg0)}
+.auth-card{width:390px;background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r)}
+.auth-head{padding:28px 26px 0}
+.auth-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;background:var(--gbd);color:var(--grn);padding:3px 10px;border-radius:20px;border:1px solid var(--gdm);margin-bottom:14px}
+.auth-head h2{font-size:23px;font-weight:700;margin-bottom:3px}
+.auth-head p{font-size:12px;color:var(--t2);margin-bottom:24px}
+.auth-body{padding:0 26px 26px}
+.auth-tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:18px}
+.auth-tab{padding:8px 16px;font-size:12px;cursor:pointer;color:var(--t2);border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.auth-tab.on{color:var(--t0);font-weight:600;border-bottom-color:var(--blu)}
+.aff{margin-bottom:13px}
+.aff label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px}
+.aff input{width:100%;padding:10px 12px;font-size:13px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit;transition:border-color .15s}
+.aff input:focus{border-color:var(--blu)}
+.auth-err{background:var(--rbd);color:var(--red);border:1px solid #3a1515;padding:8px 11px;border-radius:var(--rs);font-size:12px;margin-bottom:12px;display:none}
+.auth-ok{background:var(--gbd);color:var(--grn);border:1px solid var(--gdm);padding:8px 11px;border-radius:var(--rs);font-size:12px;margin-bottom:12px;display:none}
+.auth-btn{width:100%;padding:11px;font-size:13px;font-weight:700;background:var(--t0);color:var(--bg0);border:none;border-radius:var(--rs);cursor:pointer;font-family:inherit;transition:opacity .15s}
+.auth-btn:hover{opacity:.88}.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-link{font-size:11px;color:var(--blu);cursor:pointer;text-decoration:none;background:none;border:none;font-family:inherit}
+.auth-foot{padding:14px 26px;border-top:1px solid var(--bd);font-size:11px;color:var(--t2);text-align:center}
+
+/* ── APP SHELL ─────────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ─────────────────────── */
+.sb{width:215px;background:var(--bg1);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-brand{padding:16px;border-bottom:1px solid var(--bd)}
+.sb-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--grn);margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.sb-name{font-size:13px;font-weight:700}
+.sb-sub{font-size:10px;color:var(--t2);margin-top:2px;padding-left:13px}
+.sb-sec{font-size:10px;font-weight:600;color:var(--t2);letter-spacing:.8px;padding:14px 14px 5px;text-transform:uppercase}
+.si{display:flex;align-items:center;gap:9px;padding:8px 10px;font-size:12px;color:var(--t1);cursor:pointer;border-radius:var(--rs);margin:1px 6px;border-left:2px solid transparent;transition:all .12s;user-select:none}
+.si:hover{background:var(--bg2);color:var(--t0)}.si.on{background:var(--bg3);color:var(--t0);font-weight:500;border-left-color:var(--t0)}
+.si svg{width:14px;height:14px;flex-shrink:0;opacity:.7}.si.on svg{opacity:1}
+.sb-bot{margin-top:auto;padding:12px 14px;border-top:1px solid var(--bd)}
+.sb-av{width:28px;height:28px;border-radius:50%;background:var(--bbd);border:1px solid var(--blu);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--blu);flex-shrink:0}
+.sb-user{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sb-out{font-size:10px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;padding:0}
+
+/* ── TOPBAR ─────────────────────── */
+.topbar{height:46px;background:var(--bg1);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0}
+.tbt{font-size:14px;font-weight:700;flex:1}.tbd{font-size:11px;color:var(--t2)}
+
+/* ── CONTENT ─────────────────────── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.pages{flex:1;overflow-y:auto}
+.page{display:none;padding:18px}.page.on{display:block}
+
+/* ── CARDS & GRID ─────────────────── */
+.card{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);padding:15px;margin-bottom:14px}
+.ch{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.ch h3{font-size:13px;font-weight:600}.ch small{font-size:11px;color:var(--t2)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.krow{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:14px}
+.kc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:13px 14px}
+.kl{font-size:10px;font-weight:500;color:var(--t2);margin-bottom:5px}
+.kv{font-size:20px;font-weight:700;letter-spacing:-.5px}.ks{font-size:10px;color:var(--t2);margin-top:3px}
+.kc.g .kv{color:var(--grn)}.kc.r .kv{color:var(--red)}.kc.b .kv{color:var(--blu)}.kc.a .kv{color:var(--amb)}
+
+/* ── ROWS ─────────────────────── */
+.dr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px}
+.dr:last-child{border:none}.dl{color:var(--t1)}.dv{font-weight:500;color:var(--t0)}
+.dv.g{color:var(--grn)}.dv.r{color:var(--red)}.dv.b{color:var(--blu)}.dv.a{color:var(--amb)}
+.dr.tot{border-top:1px solid var(--bd2);padding-top:10px;margin-top:4px}
+.dr.tot .dl{font-weight:600;color:var(--t0)}.dr.tot .dv{font-size:15px}
+.divider{height:1px;background:var(--bd);margin:10px 0}
+.slbl{font-size:10px;font-weight:600;color:var(--t2);letter-spacing:.5px;text-transform:uppercase;padding:9px 0 4px}
+
+/* ── FORMS ─────────────────────── */
+.ff{display:flex;flex-direction:column;gap:3px}.ff label{font-size:10px;font-weight:600;color:var(--t2)}
+.ff input,.ff select,.ff textarea{font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;width:100%;font-family:inherit;transition:border-color .15s}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--blu)}
+.ff textarea{height:62px;resize:vertical}.ff select option{background:var(--bg2)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+
+/* ── AUTOCOMPLETE ─────────────────── */
+.acw{position:relative}
+.aci{font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;width:100%;font-family:inherit}
+.aci:focus{border-color:var(--blu)}
+.acd{position:absolute;top:calc(100%+3px);left:0;right:0;background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--rs);z-index:300;display:none;max-height:150px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.acd.open{display:block}
+.acdi{padding:7px 10px;font-size:12px;cursor:pointer;color:var(--t1);border-bottom:1px solid var(--bd)}
+.acdi:last-child{border:none}.acdi:hover{background:var(--bg3);color:var(--t0)}.acdi-new{color:var(--grn);font-weight:500}
+
+/* ── BUTTONS ─────────────────────── */
+.btn{padding:7px 14px;font-size:12px;font-weight:600;border-radius:var(--rs);cursor:pointer;border:none;font-family:inherit;transition:opacity .12s}
+.bf{background:var(--t0);color:var(--bg0)}.bf:hover{opacity:.86}.bf:disabled{opacity:.5;cursor:not-allowed}
+.bo{background:transparent;color:var(--t1);border:1px solid var(--bd2)}.bo:hover{background:var(--bg3);color:var(--t0)}
+.bg-btn{background:var(--gbd);color:var(--grn);border:1px solid var(--gdm)}.bg-btn:hover{background:var(--gdm);color:var(--bg0)}
+.br-btn{background:var(--rbd);color:var(--red);border:1px solid #3a1515}
+
+/* ── BADGES & PILLS ─────────────────── */
+.badge{display:inline-flex;font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px}
+.bb{background:var(--bbd);color:var(--blu)}.ba{background:var(--abd);color:var(--amb)}.bg-b{background:var(--gbd);color:var(--grn)}.br-b{background:var(--rbd);color:var(--red)}
+.pill-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.pill{padding:4px 10px;font-size:11px;border-radius:20px;border:1px solid var(--bd2);cursor:pointer;color:var(--t2);background:var(--bg2)}
+.pill:hover{color:var(--t0)}.pill.on{background:var(--t0);color:var(--bg0);border-color:var(--t0)}
+
+/* ── BOXES ─────────────────────── */
+.notice{padding:18px;text-align:center;font-size:12px;color:var(--t2)}
+.info-box{background:var(--bbd);border:1px solid #1d3a6e;border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--blu);margin-bottom:10px}
+.warn-box{background:var(--abd);border:1px solid #3a2500;border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--amb);margin-bottom:10px}
+.ok-box{background:var(--gbd);border:1px solid #0d3a1e;border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--grn);margin-bottom:10px}
+.live-box{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 12px;margin-bottom:10px}
+.formula{font-size:10px;color:var(--t2);margin-top:5px;font-style:italic;line-height:1.6}
+.srow{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 12px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:6px}
+.srow .sn{font-size:12px;font-weight:600}.srow .sm{font-size:10px;color:var(--t2);margin-top:2px}.srow .sv{font-size:12px;font-weight:600;color:var(--grn);text-align:right;flex-shrink:0}
+
+/* ── UPLOAD ─────────────────────── */
+.up{border:1.5px dashed var(--bd2);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:10px;transition:all .12s}
+.up:hover{background:var(--bg2);border-color:var(--blu)}.up p{font-size:12px;color:var(--t1);margin-bottom:2px}.up small{font-size:10px;color:var(--t2)}
+
+/* ── TABS ─────────────────────── */
+.tab-row{display:flex;border-bottom:1px solid var(--bd);margin-bottom:14px;flex-wrap:wrap;gap:0}
+.tab{padding:8px 13px;font-size:12px;cursor:pointer;color:var(--t2);border-bottom:2px solid transparent;margin-bottom:-1px;user-select:none}
+.tab:hover{color:var(--t0)}.tab.on{color:var(--t0);font-weight:600;border-bottom-color:var(--blu)}
+.tab-panel{display:none}.tab-panel.on{display:block}
+
+/* ── TABLE ─────────────────────── */
+.tw{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{text-align:left;padding:6px 8px;font-size:10px;font-weight:600;color:var(--t2);border-bottom:1px solid var(--bd2);background:var(--bg2);white-space:nowrap}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--bd);color:var(--t0);white-space:nowrap}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}.tbl td.n,.tbl th.n{text-align:right;font-variant-numeric:tabular-nums}
+.tbl .cat-hdr td{background:var(--bg3);font-weight:600;font-size:10px;color:var(--t2);letter-spacing:.4px}
+.tbl tfoot td{font-weight:600;background:var(--bg3);border-top:1px solid var(--bd2)}
+
+/* ── BAR ─────────────────────── */
+.bar-bg{height:5px;background:var(--bg3);border-radius:3px;margin-top:3px}
+.bar-fill{height:100%;border-radius:3px}
+
+/* ── MODAL ─────────────────────── */
+.modal-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-ov.show{display:flex}
+.modal-box{background:var(--bg1);border:1px solid var(--bd2);border-radius:var(--r);padding:22px;width:90%;max-width:620px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:4px}.modal-sub{font-size:11px;color:var(--t2);margin-bottom:14px}
+
+/* ── TRANSFER VISUAL ─────────────────── */
+.txfr-vis{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--r);margin-bottom:12px}
+.txfr-bk{flex:1;text-align:center;padding:10px;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--bd2)}
+.txfr-bk.from{border-color:var(--red);background:rgba(248,113,113,.06)}.txfr-bk.to{border-color:var(--grn);background:rgba(34,197,94,.06)}
+.txfr-bk .bn{font-size:11px;font-weight:600;margin-bottom:2px}.txfr-bk .bv{font-size:15px;font-weight:700;color:var(--blu)}
+.txfr-arr{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;color:var(--amb)}
+.txfr-arr span{font-size:11px;font-weight:700}
+
+/* ── SRCH ─────────────────────── */
+.srch{width:100%;font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;margin-bottom:10px;font-family:inherit}
+.srch:focus{border-color:var(--blu)}
+
+/* ── TOAST ─────────────────────── */
+#toast{position:fixed;bottom:22px;right:22px;background:var(--bg3);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 16px;font-size:12px;font-weight:500;z-index:2000;opacity:0;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;max-width:360px}
+
+/* ── LOADING ─────────────────────── */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--t2);font-size:12px}
+.spin{width:16px;height:16px;border:2px solid var(--bd2);border-top-color:var(--blu);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ══ TOAST ══ -->
+<div id="toast"></div>
+
+<!-- ══ AUTH ══ -->
+<div class="auth-wrap" id="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="auth-badge"><span style="width:6px;height:6px;border-radius:50%;background:var(--grn);display:inline-block"></span>ERP System</div>
+      <h2>Siruvani Bar</h2>
+      <p>Management ERP &middot; Tirupur</p>
+    </div>
+    <div style="margin:12px 26px 0;padding:8px 12px;display:flex;align-items:center;gap:7px;font-size:11px;font-weight:500;background:var(--abd);color:var(--amb);border:1px solid #3a2500;border-radius:7px">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="10" height="8" rx="1"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+      Private system — authorised access only
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab on" onclick="switchTab('login',this)">Sign in</button>
+        <button class="auth-tab" onclick="switchTab('reset',this)">Forgot password</button>
+      </div>
+      <!-- LOGIN -->
+      <div id="tab-login">
+        <div class="auth-err" id="login-err"></div>
+        <div class="aff"><label>Email</label><input type="email" id="l-email" placeholder="you@email.com" autocomplete="email"></div>
+        <div class="aff"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+      </div>
+      
+      <div id="tab-reset" style="display:none">
+        <div class="auth-err" id="reset-err"></div>
+        <div class="auth-ok" id="reset-ok"></div>
+        <div class="aff"><label>Email address</label><input type="email" id="r-email" placeholder="you@email.com"></div>
+        <button class="auth-btn" id="reset-btn" onclick="doReset()">Send reset link</button>
+      </div>
+    </div>
+    <div class="auth-foot" style="color:var(--t2);font-size:11px;text-align:center">🔒 Private ERP — contact owner for access</div>
+  </div>
+</div>
+
+<!-- ══ PURCHASE CONFIRM MODAL ══ -->
+<div class="modal-ov" id="pur-modal">
+  <div class="modal-box">
+    <div class="modal-title">Confirm detected purchases</div>
+    <div class="modal-sub">Items with non-zero Purch column found. Rule: Purch column ONLY = purchase. Opening diff = variance for manual review.</div>
+    <div id="modal-items"></div>
+    <div class="divider"></div>
+    <div class="dr"><span class="dl" style="font-weight:600">Total purchase value</span><span style="font-size:15px;font-weight:700;color:var(--amb)" id="modal-total">₹0</span></div>
+    <div class="formula" style="margin-bottom:14px">Value = Purch qty × P.Rate. Cross-check with TASMAC invoice.</div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn bg-btn" onclick="confirmPurch()">Confirm & log</button>
+      <button class="btn bo" onclick="dismissPurch()">Dismiss — log manually</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STOCK MANUAL ENTRY MODAL ══ -->
+<div class="modal-ov" id="stk-modal">
+  <div class="modal-box" style="max-width:680px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="modal-title" style="margin-bottom:0">Enter stock report values</div>
+      <button onclick="closeModal('stk-modal')" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:20px;line-height:1">×</button>
+    </div>
+    <div class="info-box">File: <span id="stk-fname">—</span> | Date: <span id="stk-fdate">—</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="ff"><label>Report date</label><input type="date" id="me-date"></div>
+      <div></div>
+      <div class="ff"><label>OB Stock Purch (₹)</label><input type="number" id="me-obp" placeholder="0"></div>
+      <div class="ff"><label>OP Stock Sales (₹)</label><input type="number" id="me-obs" placeholder="0"></div>
+      <div class="ff"><label>Purchase P.Rate — Purch col total (₹)</label><input type="number" id="me-pp" placeholder="0"></div>
+      <div class="ff"><label>Purchase S.Rate (₹)</label><input type="number" id="me-ps" placeholder="0"></div>
+      <div class="ff"><label>Sales P.Rate — COGS (₹)</label><input type="number" id="me-sp" placeholder="0"></div>
+      <div class="ff"><label>Sales S.Rate — Revenue (₹)</label><input type="number" id="me-ss" placeholder="0"></div>
+      <div class="ff"><label>Closing P.Rate (₹)</label><input type="number" id="me-cp" placeholder="0"></div>
+      <div class="ff"><label>Closing S.Rate (₹)</label><input type="number" id="me-cs" placeholder="0"></div>
+      <div class="ff"><label>Opening units</label><input type="number" id="me-ou" placeholder="0"></div>
+      <div class="ff"><label>Units purchased (Purch col)</label><input type="number" id="me-pu" placeholder="0"></div>
+      <div class="ff"><label>Units sold</label><input type="number" id="me-us" placeholder="0"></div>
+      <div class="ff"><label>Closing units</label><input type="number" id="me-cu" placeholder="0"></div>
+    </div>
+    <div class="info-box" style="margin-bottom:8px">Item rows (optional) — one per line: <code style="color:var(--t0)">Category,ItemName,OpStk,PurchCol,Sold,Closing,PRate,SRate</code></div>
+    <div class="ff" style="margin-bottom:14px">
+      <label>Item data</label>
+      <textarea id="me-items" style="height:90px;font-family:monospace;font-size:11px" placeholder="BEER,KF CLASSIC,2038,0,417,1621,155.63,200&#10;COOLDRINKS,WATER 1,48,120,20,148,9,20&#10;FULL,1848-750,3,0,3,0,970.03,1120"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn bf" id="stk-save-btn" onclick="saveStockReport()">Save report</button>
+      <button class="btn bo" onclick="closeModal('stk-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div class="app" id="app" style="display:none">
+  <div class="sb">
+    <div class="sb-brand">
+      <div class="sb-name"><span class="sb-dot"></span>Siruvani Bar</div>
+      <div class="sb-sub">Management ERP · Tirupur</div>
+    </div>
+    <div class="sb-sec">Main</div>
+    <div class="si on" onclick="go('dash',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Dashboard</div>
+    <div class="sb-sec">Transactions</div>
+    <div class="si" onclick="go('sales',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10l-1 9H4z"/><path d="M6 3V2a2 2 0 014 0v1"/></svg>Sales entry</div>
+    <div class="si" onclick="go('purchase',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M3 7l5-5 5 5"/></svg>Purchase</div>
+    <div class="si" onclick="go('expense',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>Expenses</div>
+    <div class="sb-sec">Intelligence</div>
+    <div class="si" onclick="go('stock',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12l4-5 3 3 5-7"/></svg>Stock intel</div>
+    <div class="si" onclick="go('bank',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="6" width="14" height="8" rx="1"/><path d="M1 9h14M5 6V5a3 3 0 016 0v1"/></svg>Bank & cash</div>
+    <div class="si" onclick="go('reports',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13V6M7 13V3M11 13V9"/></svg>Reports</div>
+    <div class="sb-bot">
+      <div class="sb-user">
+        <div class="sb-av" id="sb-av">AD</div>
+        <div><div style="font-size:12px;font-weight:500" id="sb-name">Loading...</div><div style="font-size:10px;color:var(--t2)">Owner</div></div>
+      </div>
+      <button class="sb-out" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="topbar"><div class="tbt" id="tbt">Dashboard</div><div class="tbd" id="tbd"></div></div>
+    <div class="pages">
+
+<!-- ════════════════ DASHBOARD ════════════════ -->
+<div class="page on" id="pg-dash">
+  <div class="krow" id="dash-krow"><div class="loading"><div class="spin"></div>Loading...</div></div>
+  <div class="g2">
+    <div>
+      <div class="card"><div class="ch"><h3>Sales breakdown</h3><small>from sales entries</small></div><div id="dash-sales"><div class="notice">Add sales in Sales Entry tab</div></div></div>
+      <div class="card"><div class="ch"><h3>Top moving stocks</h3><small>from stock reports</small></div><div id="dash-top"><div class="notice">Upload stock reports to see movers</div></div></div>
+    </div>
+    <div>
+      <div class="card"><div class="ch"><h3>Daily P&L</h3><small>Sales S.Rate − P.Rate</small></div><div id="dash-pnl"><div class="notice">Upload stock reports to see P&L</div></div></div>
+      <div class="card">
+        <div class="ch"><h3>Purchase detection</h3><small>Purch col only</small></div>
+        <div class="ok-box">Rule: Purch column ONLY = purchase. Opening diff = variance for manual review. 11 AM – 11 PM cycle.</div>
+        <div id="dash-pur-det"><div class="notice">Upload stock reports to see detections</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SALES ════════════════ -->
+<div class="page" id="pg-sales">
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><h3>Sales entry</h3></div>
+      <div class="fg2">
+        <div class="ff"><label>Date</label><input type="date" id="se-dt"></div>
+        <div class="ff"><label>Shift</label><select id="se-shift"><option>Full day</option><option>Morning</option><option>Evening</option></select></div>
+      </div>
+      <div class="slbl">Liquor sales</div>
+      <div class="fg2">
+        <div class="ff"><label>Liquor (₹)</label><input type="number" id="s-liq" placeholder="0" oninput="calcS()"></div>
+        <div class="ff"><label>Express (₹)</label><input type="number" id="s-exp" placeholder="0" oninput="calcS()"></div>
+      </div>
+      <div class="slbl">Food & beverage</div>
+      <div class="fg2">
+        <div class="ff"><label>Food (₹)</label><input type="number" id="s-food" placeholder="0" oninput="calcS()"></div>
+        <div class="ff"><label>Snacks token (₹)</label><input type="number" id="s-snk" placeholder="0" oninput="calcS()"></div>
+      </div>
+      <div class="fg2">
+        <div class="ff"><label>AC charges (₹)</label><input type="number" id="s-ac" placeholder="0" oninput="calcS()"></div>
+        <div class="ff"><label>Cooldrink (₹)</label><input type="number" id="s-cool" placeholder="0" oninput="calcS()"></div>
+      </div>
+      <div class="fg2">
+        <div class="ff"><label>Cigarette (₹)</label><input type="number" id="s-cig" placeholder="0" oninput="calcS()"></div>
+        <div class="ff"><label>Empty bottle (₹)</label><input type="number" id="s-bot" placeholder="0" oninput="calcS()"></div>
+      </div>
+      <div class="fg2">
+        <div class="ff"><label>Other (₹)</label><input type="number" id="s-oth" placeholder="0" oninput="calcS()"></div>
+        <div class="ff"><label>Discount (-₹)</label><input type="number" id="s-disc" placeholder="0" oninput="calcS()"></div>
+      </div>
+      <div class="slbl">Payment collection</div>
+      <div class="fg2">
+        <div class="ff"><label>Cash (₹)</label><input type="number" id="s-cash" placeholder="0" oninput="calcS()"></div>
+        <div class="ff"><label>Paytm 1 → Hotel Siruvani (₹)</label><input type="number" id="s-p1" placeholder="0" oninput="calcS()"></div>
+      </div>
+      <div class="fg2">
+        <div class="ff"><label>Paytm 2 → SW Club (₹)</label><input type="number" id="s-p2" placeholder="0" oninput="calcS()"></div>
+        <div class="ff"><label>Pending receivable (₹)</label><input type="number" id="s-pend" placeholder="0" oninput="calcS()"></div>
+      </div>
+      <div class="live-box">
+        <div class="dr"><span class="dl">Gross sales</span><span class="dv g" id="lc-g">₹0</span></div>
+        <div class="dr"><span class="dl">Net (after discount)</span><span class="dv" id="lc-n">₹0</span></div>
+        <div class="dr"><span class="dl">Total collected</span><span class="dv" id="lc-c">₹0</span></div>
+        <div class="dr"><span class="dl">Hotel Siruvani receives</span><span class="dv b" id="lc-b1">₹0</span></div>
+        <div class="dr"><span class="dl">SW Club receives</span><span class="dv b" id="lc-b2">₹0</span></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bf" id="save-sales-btn" onclick="saveSales()" style="flex:1">Save entry</button>
+        <button class="btn bo" onclick="clearSales()">Clear</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ch"><h3>Bank preview</h3></div>
+        <div class="info-box">Paytm 1 → Hotel Siruvani | Paytm 2 → SW Club</div>
+        <div class="slbl">Hotel Siruvani (Bank 1)</div>
+        <div class="dr"><span class="dl">Opening (month start)</span><span class="dv b" id="bp-b1o">₹0</span></div>
+        <div class="dr"><span class="dl">+ Paytm 1 cumulative</span><span class="dv g" id="bp-b1c">₹0</span></div>
+        <div class="dr tot"><span class="dl">Balance</span><span class="dv b" id="bp-b1n">₹0</span></div>
+        <div class="slbl">Siruvani SW Club (Bank 2)</div>
+        <div class="dr"><span class="dl">Opening (month start)</span><span class="dv b" id="bp-b2o">₹0</span></div>
+        <div class="dr"><span class="dl">+ Paytm 2 cumulative</span><span class="dv g" id="bp-b2c">₹0</span></div>
+        <div class="dr tot"><span class="dl">Balance</span><span class="dv b" id="bp-b2n">₹0</span></div>
+      </div>
+      <div class="card"><div class="ch"><h3>Saved entries</h3><small id="se-ct">0 entries</small></div><div id="se-log"><div class="notice">No entries yet</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ PURCHASE ════════════════ -->
+<div class="page" id="pg-purchase">
+  <div class="g2">
+    <div>
+      <!-- TASMAC RTGS -->
+      <div class="card">
+        <div class="ch"><h3>TASMAC — Liquor</h3><span class="badge bb">RTGS ONLY</span></div>
+        <div class="info-box">All liquor from TASMAC Ltd via RTGS. Auto-debits selected bank.</div>
+        <div class="fg2">
+          <div class="ff"><label>Date</label><input type="date" id="rt-dt"></div>
+          <div class="ff"><label>Debit from</label><select id="rt-bk"><option value="">Loading banks...</option></select></div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Amount to TASMAC (₹)</label><input type="number" id="rt-amt" placeholder="0" oninput="calcRTGS()"></div>
+          <div class="ff"><label>UTR / RTGS reference</label><input type="text" id="rt-utr" placeholder="UTR number"></div>
+        </div>
+        <div class="live-box">
+          <div class="dr"><span class="dl" id="rt-lbl">Bank available</span><span class="dv b" id="rt-bal">₹0</span></div>
+          <div class="dr"><span class="dl">Balance after RTGS</span><span class="dv" id="rt-aft">₹0</span></div>
+        </div>
+        <button class="btn bf" id="save-rtgs-btn" onclick="saveRTGS()" style="width:100%">Save RTGS — debit from bank</button>
+      </div>
+
+      <!-- OTHER PURCHASES -->
+      <div class="card">
+        <div class="ch"><h3>Other purchases</h3><span class="badge ba">CASH / UPI / BANK</span></div>
+        <div class="ok-box">Each item has its own Save. Cash deducts from cash in hand. Bank deducts from selected bank.</div>
+
+        <div class="slbl">Cooldrink purchase</div>
+        <div class="fg2">
+          <div class="ff"><label>Supplier / description</label><input type="text" id="cd-desc" placeholder="e.g. Coca-Cola, 7UP..."></div>
+          <div class="ff"><label>Amount (₹)</label><input type="number" id="cd-amt" placeholder="0" oninput="calcOth('cd')"></div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Payment mode</label><select id="cd-mode" onchange="calcOth('cd')">
+            <option value="cash">Cash — from cash in hand</option><option value="upi">UPI</option>
+            <option value="bank1">Hotel Siruvani (Bank 1)</option><option value="bank2">SW Club (Bank 2)</option>
+          </select></div>
+          <div class="ff"><label>Date</label><input type="date" id="cd-dt"></div>
+        </div>
+        <div class="live-box"><div class="dr"><span class="dl">Effect</span><span class="dv r" id="cd-eff">Cash in hand −₹0</span></div></div>
+        <button class="btn bo" id="save-cd-btn" onclick="saveOthPur('cooldrink','cd')" style="width:100%;margin-bottom:14px">Save cooldrink purchase</button>
+
+        <div style="height:1px;background:var(--bd2);margin-bottom:12px"></div>
+        <div class="slbl">Cigarette purchase</div>
+        <div class="fg2">
+          <div class="ff"><label>Supplier / description</label><input type="text" id="cig-desc" placeholder="e.g. ITC Gold Flake..."></div>
+          <div class="ff"><label>Amount (₹)</label><input type="number" id="cig-amt" placeholder="0" oninput="calcOth('cig')"></div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Payment mode</label><select id="cig-mode" onchange="calcOth('cig')">
+            <option value="cash">Cash — from cash in hand</option><option value="upi">UPI</option>
+            <option value="bank1">Hotel Siruvani (Bank 1)</option><option value="bank2">SW Club (Bank 2)</option>
+          </select></div>
+          <div class="ff"><label>Date</label><input type="date" id="cig-dt"></div>
+        </div>
+        <div class="live-box"><div class="dr"><span class="dl">Effect</span><span class="dv r" id="cig-eff">Cash in hand −₹0</span></div></div>
+        <button class="btn bo" id="save-cig-btn" onclick="saveOthPur('cigarette','cig')" style="width:100%;margin-bottom:14px">Save cigarette purchase</button>
+
+        <div style="height:1px;background:var(--bd2);margin-bottom:12px"></div>
+        <div class="slbl">Other purchase</div>
+        <div class="fg2">
+          <div class="ff"><label>Description</label><input type="text" id="oth-desc" placeholder="Stationery, cleaning..."></div>
+          <div class="ff"><label>Amount (₹)</label><input type="number" id="oth-amt" placeholder="0" oninput="calcOth('oth')"></div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Category</label><select id="oth-cat"><option>Kitchen supplies</option><option>Cleaning</option><option>Stationery</option><option>Equipment</option><option>Other</option></select></div>
+          <div class="ff"><label>Payment mode</label><select id="oth-mode" onchange="calcOth('oth')">
+            <option value="cash">Cash</option><option value="upi">UPI</option>
+            <option value="bank1">Hotel Siruvani</option><option value="bank2">SW Club</option>
+          </select></div>
+        </div>
+        <div class="live-box"><div class="dr"><span class="dl">Effect</span><span class="dv r" id="oth-eff">Cash in hand −₹0</span></div></div>
+        <button class="btn bo" id="save-oth-btn" onclick="saveOthPur('other','oth')" style="width:100%">Save other purchase</button>
+      </div>
+
+      <!-- INTER-BANK TRANSFER -->
+      <div class="card">
+        <div class="ch"><h3>Inter-bank transfer</h3><span class="badge bg-b">INTERNAL</span></div>
+        <div class="info-box">Common use: Transfer Hotel Siruvani → SW Club before TASMAC RTGS payment.</div>
+        <div class="ff" style="margin-bottom:10px"><label>Transfer direction</label>
+          <select id="tx-dir" onchange="calcTxfr()">
+            <option value="1to2">Hotel Siruvani → SW Club (for TASMAC)</option>
+            <option value="2to1">SW Club → Hotel Siruvani</option>
+          </select>
+        </div>
+        <div class="txfr-vis">
+          <div class="txfr-bk from"><div class="bn" id="tv-fn">Hotel Siruvani</div><div class="bv" id="tv-fb">₹0</div><div style="font-size:10px;color:var(--t2)">From</div></div>
+          <div class="txfr-arr">
+            <span id="tv-amt">₹0</span>
+            <svg width="32" height="16" viewBox="0 0 32 16" fill="none"><path d="M2 8h28M22 2l8 6-8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="txfr-bk to"><div class="bn" id="tv-tn">SW Club</div><div class="bv" id="tv-tb">₹0</div><div style="font-size:10px;color:var(--t2)">To</div></div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Amount (₹)</label><input type="number" id="tx-amt" placeholder="0" oninput="calcTxfr()"></div>
+          <div class="ff"><label>Date</label><input type="date" id="tx-dt"></div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Reason</label><input type="text" id="tx-ref" placeholder="e.g. For TASMAC purchase"></div>
+          <div class="ff"><label>UTR / IMPS ref</label><input type="text" id="tx-utr" placeholder="UTR number"></div>
+        </div>
+        <div class="live-box">
+          <div class="dr"><span class="dl" id="tv-afl">Hotel Siruvani after</span><span class="dv" id="tv-afv">₹0</span></div>
+          <div class="dr"><span class="dl" id="tv-atl">SW Club after</span><span class="dv g" id="tv-atv">₹0</span></div>
+          <div class="formula">Internal — total business money unchanged.</div>
+        </div>
+        <button class="btn bf" id="save-txfr-btn" onclick="saveTxfr()" style="width:100%">Execute transfer</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ch"><h3>RTGS summary</h3></div>
+        <div class="dr"><span class="dl">Total RTGS</span><span class="dv b" id="rtgs-tot">₹0</span></div>
+        <div class="dr"><span class="dl">Last UTR</span><span class="dv" id="rtgs-utr">—</span></div>
+      </div>
+      <div class="card"><div class="ch"><h3>Transfer log</h3><small id="txfr-ct">0</small></div><div id="txfr-log"><div class="notice">No transfers yet</div></div></div>
+      <div class="card">
+        <div class="ch"><h3>All purchase log</h3><small id="pur-ct">0</small></div>
+        <div id="pur-log"><div class="notice">No purchases recorded</div></div>
+        <div class="divider"></div>
+        <div class="dr tot"><span class="dl">Total</span><span class="dv a" id="pur-total">₹0</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">
+          <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:8px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:3px">RTGS</div><div style="font-size:13px;font-weight:600;color:var(--blu)" id="ps-rtgs">₹0</div></div>
+          <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:8px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:3px">Cash</div><div style="font-size:13px;font-weight:600;color:var(--red)" id="ps-cash">₹0</div></div>
+          <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:8px;text-align:center"><div style="font-size:10px;color:var(--t2);margin-bottom:3px">UPI/Bank</div><div style="font-size:13px;font-weight:600;color:var(--amb)" id="ps-upi">₹0</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ EXPENSE ════════════════ -->
+<div class="page" id="pg-expense">
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><h3>Expense entry</h3></div>
+      <div class="fg2">
+        <div class="ff"><label>Date</label><input type="date" id="e-dt"></div>
+        <div class="ff"><label>Payment mode</label><select id="e-mode">
+          <option value="cash">Cash</option><option value="bank1">Hotel Siruvani (Bank 1)</option>
+          <option value="bank2">SW Club (Bank 2)</option><option value="upi">UPI</option>
+        </select></div>
+      </div>
+      <div class="fg2">
+        <div class="ff"><label>Category — type to search or create</label>
+          <div class="acw"><input class="aci" id="ec-in" type="text" placeholder="e.g. Kitchen, Staff..." autocomplete="off" oninput="acF('cat')" onfocus="acO('cat')" onblur="setTimeout(()=>acC('cat'),200)"><div class="acd" id="acd-cat"></div></div>
+        </div>
+        <div class="ff"><label>Sub-category — type to search or create</label>
+          <div class="acw"><input class="aci" id="es-in" type="text" placeholder="e.g. Groceries, Wages..." autocomplete="off" oninput="acF('sub')" onfocus="acO('sub')" onblur="setTimeout(()=>acC('sub'),200)"><div class="acd" id="acd-sub"></div></div>
+        </div>
+      </div>
+      <div class="ff" style="margin-bottom:10px"><label>Amount (₹)</label><input type="number" id="e-amt" placeholder="0"></div>
+      <div class="ff" style="margin-bottom:12px"><label>Description</label><textarea id="e-desc" placeholder="What was this expense for?"></textarea></div>
+      <button class="btn bf" id="save-exp-btn" onclick="saveExpense()" style="width:100%">Save expense</button>
+    </div>
+    <div>
+      <div class="card"><div class="ch"><h3>Category tree</h3></div><div id="cat-tree"><div class="notice">No categories yet</div></div></div>
+      <div class="card"><div class="ch"><h3>Expense log</h3><small id="exp-ct">0 entries</small></div><div id="exp-log"><div class="notice">No expenses</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ STOCK INTEL ════════════════ -->
+<div class="page" id="pg-stock">
+  <div class="g2" style="margin-bottom:14px">
+    <div class="card" style="margin-bottom:0">
+      <div class="ch"><h3>Upload stock report</h3><small>11 AM – 11 PM cycle</small></div>
+      <div class="warn-box">Upload next morning. Purch column = purchases (confirmation modal). Opening diff = variance only — never auto-logged.</div>
+      <div class="fg2">
+        <div class="ff"><label>Report date</label><input type="date" id="stk-dt"></div>
+        <div class="ff"><label>Type</label><select><option>Daily closing</option><option>Opening report</option></select></div>
+      </div>
+      <div class="up" onclick="document.getElementById('stk-file').click()"><p>Upload WhatsApp stock PDF</p><small>After upload, fill in the values form</small><input id="stk-file" type="file" accept=".pdf" style="display:none" onchange="handleStkUpload(this)"></div>
+      <button class="btn bo" onclick="openStkModal()" style="width:100%">+ Enter report values manually</button>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ch"><h3>Loaded reports</h3><small id="rpt-ct">0 reports</small></div>
+      <div id="rpt-list"><div class="notice">No reports yet</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="tab-row">
+      <div class="tab on" onclick="stab('sum',this)">P&L summary</div>
+      <div class="tab" onclick="stab('mv',this)">Brand movement</div>
+      <div class="tab" onclick="stab('pur',this)">Purchase detection</div>
+      <div class="tab" onclick="stab('trk',this)">Item tracker</div>
+      <div class="tab" onclick="stab('anl',this)">Analytics</div>
+    </div>
+    <!-- P&L SUMMARY -->
+    <div class="tab-panel on" id="stp-sum">
+      <div style="margin-bottom:12px"><select id="sd" style="font-size:12px;padding:6px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit" onchange="renderSum()"><option value="-1">— Upload reports —</option></select></div>
+      <div id="sum-content"><div class="notice">Upload stock reports to see P&L summary</div></div>
+    </div>
+    <!-- BRAND MOVEMENT -->
+    <div class="tab-panel" id="stp-mv">
+      <div class="fg2" style="margin-bottom:10px"><div><select id="mvd" style="font-size:12px;padding:6px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit;width:100%" onchange="renderMv()"><option value="-1">— Upload reports —</option></select></div></div>
+      <div class="pill-row" id="mv-pills">
+        <div class="pill on" onclick="mvFil('ALL',this)">All</div>
+        <div class="pill" onclick="mvFil('BEER',this)">Beer</div><div class="pill" onclick="mvFil('BEER TIN',this)">Beer tin</div>
+        <div class="pill" onclick="mvFil('CIGRETTE',this)">Cigarette</div><div class="pill" onclick="mvFil('COOLDRINKS',this)">Cooldrinks</div>
+        <div class="pill" onclick="mvFil('FULL',this)">Full</div><div class="pill" onclick="mvFil('GENERAL',this)">General</div>
+        <div class="pill" onclick="mvFil('HALF',this)">Half</div><div class="pill" onclick="mvFil('QUARTER',this)">Quarter</div>
+        <div class="pill" onclick="mvFil('TEQUILA',this)">Tequila</div><div class="pill" onclick="mvFil('WHISKY',this)">Whisky</div>
+        <div class="pill" onclick="mvFil('WINE',this)">Wine</div>
+      </div>
+      <input class="srch" type="text" placeholder="Search brand..." oninput="mvSrch(this.value)">
+      <div class="tw"><table class="tbl" id="mv-tbl">
+        <thead><tr><th>Cat</th><th>Item</th><th class="n">Op.Stk</th><th class="n">Purch</th><th class="n">Total</th><th class="n">Sale</th><th class="n">Closing</th><th class="n">P.Rate</th><th class="n">S.Rate</th><th class="n">Profit/unit</th><th class="n">COGS</th><th class="n">Revenue</th><th class="n">Day profit</th><th class="n">Clo.PVal</th><th class="n">Clo.SVal</th></tr></thead>
+        <tbody id="mv-body"><tr><td colspan="15" class="notice">Upload reports</td></tr></tbody>
+        <tfoot><tr id="mv-foot"></tr></tfoot>
+      </table></div>
+    </div>
+    <!-- PURCHASE DETECTION -->
+    <div class="tab-panel" id="stp-pur">
+      <div class="ok-box">Rule: Purch column ONLY = purchase. Opening diff = variance for manual review. 11 AM – 11 PM cycle.</div>
+      <div id="pur-det-list"><div class="notice">Upload stock reports to see purchase detection</div></div>
+    </div>
+    <!-- ITEM TRACKER -->
+    <div class="tab-panel" id="stp-trk">
+      <div class="fg2" style="margin-bottom:10px">
+        <input class="srch" type="text" placeholder="Search item..." oninput="trkSrch(this.value)" style="margin-bottom:0">
+        <select id="trk-cat" style="font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit" onchange="renderTrk()">
+          <option value="ALL">All categories</option><option>BEER</option><option>BEER TIN</option><option>CIGRETTE</option><option>COOLDRINKS</option><option>FULL</option><option>GENERAL</option><option>HALF</option><option>QUARTER</option><option>TEQUILA</option><option>WHISKY</option><option>WINE</option>
+        </select>
+      </div>
+      <div class="tw"><table class="tbl" id="trk-tbl">
+        <thead><tr><th>Cat</th><th>Item</th><th class="n">Total sold</th><th class="n">Purch (col)</th><th class="n">Variance</th><th class="n">Current stock</th><th class="n">Stock value</th><th class="n">P.Rate</th><th class="n">S.Rate</th><th class="n">Revenue</th><th class="n">Profit</th></tr></thead>
+        <tbody id="trk-body"><tr><td colspan="11" class="notice">Upload reports</td></tr></tbody>
+      </table></div>
+    </div>
+    <!-- ANALYTICS -->
+    <div class="tab-panel" id="stp-anl">
+      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+        <span style="font-size:11px;color:var(--t2)">Range:</span>
+        <div style="display:flex;border:1px solid var(--bd2);border-radius:var(--rs);overflow:hidden">
+          <div class="pill on" style="border-radius:0;border:none;padding:6px 12px" onclick="anlRange('all',this)">All reports</div>
+          <div class="pill" style="border-radius:0;border:none;padding:6px 12px" onclick="anlRange('last',this)">Latest only</div>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px"><div style="font-size:11px;font-weight:600;color:var(--grn);margin-bottom:10px">Top 10 — units sold</div><div id="anl-top"><div class="notice">Upload reports</div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px"><div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:10px">Least performers</div><div id="anl-low"><div class="notice">Upload reports</div></div></div>
+      </div>
+      <div class="g2">
+        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px"><div style="font-size:11px;font-weight:600;color:var(--amb);margin-bottom:10px">Top 10 — profit contribution</div><div id="anl-profit"><div class="notice">Upload reports</div></div></div>
+        <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px"><div style="font-size:11px;font-weight:600;color:var(--t1);margin-bottom:10px">Category summary</div><div id="anl-cat"><div class="notice">Upload reports</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ BANK ════════════════ -->
+<div class="page" id="pg-bank">
+  <div class="info-box" style="margin-bottom:14px">Bank opening set ONCE at month start — never reset daily. Credits from sales, debits from purchases and expenses all accumulate automatically.</div>
+  <div class="g3">
+    <div class="card">
+      <div class="ch"><h3>Hotel Siruvani</h3><small>Bank 1 · Paytm 1</small></div>
+      <div class="ff" style="margin-bottom:10px"><label>Opening balance — month start (₹)</label>
+        <div style="display:flex;gap:8px"><input type="number" id="b1-ob" placeholder="0" style="flex:1;font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit">
+        <button class="btn bf" onclick="saveBankOpening(1)" style="height:34px;padding:0 12px;flex-shrink:0">Save</button></div>
+      </div>
+      <div class="live-box">
+        <div class="dr"><span class="dl">Month opening</span><span class="dv b" id="b1-o">₹0</span></div>
+        <div class="dr"><span class="dl">+ Paytm 1 credits</span><span class="dv g" id="b1-cr">₹0</span></div>
+        <div class="dr"><span class="dl">- RTGS sent</span><span class="dv r" id="b1-rt">₹0</span></div>
+        <div class="dr"><span class="dl">- Expenses paid</span><span class="dv r" id="b1-ex">₹0</span></div>
+        <div class="dr"><span class="dl">- Other purchases</span><span class="dv r" id="b1-pur">₹0</span></div>
+        <div class="dr"><span class="dl">± Transfers</span><span class="dv a" id="b1-tr">₹0</span></div>
+        <div class="dr tot"><span class="dl">Current balance</span><span class="dv b" id="b1-cl">₹0</span></div>
+      </div>
+      <div style="font-size:10px;color:var(--t2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Recent</div>
+      <div id="b1-log"><div class="notice">No transactions</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Siruvani SW Club</h3><small>Bank 2 · Paytm 2</small></div>
+      <div class="ff" style="margin-bottom:10px"><label>Opening balance — month start (₹)</label>
+        <div style="display:flex;gap:8px"><input type="number" id="b2-ob" placeholder="0" style="flex:1;font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit">
+        <button class="btn bf" onclick="saveBankOpening(2)" style="height:34px;padding:0 12px;flex-shrink:0">Save</button></div>
+      </div>
+      <div class="live-box">
+        <div class="dr"><span class="dl">Month opening</span><span class="dv b" id="b2-o">₹0</span></div>
+        <div class="dr"><span class="dl">+ Paytm 2 credits</span><span class="dv g" id="b2-cr">₹0</span></div>
+        <div class="dr"><span class="dl">- RTGS sent</span><span class="dv r" id="b2-rt">₹0</span></div>
+        <div class="dr"><span class="dl">- Expenses paid</span><span class="dv r" id="b2-ex">₹0</span></div>
+        <div class="dr"><span class="dl">- Other purchases</span><span class="dv r" id="b2-pur">₹0</span></div>
+        <div class="dr"><span class="dl">± Transfers</span><span class="dv a" id="b2-tr">₹0</span></div>
+        <div class="dr tot"><span class="dl">Current balance</span><span class="dv b" id="b2-cl">₹0</span></div>
+      </div>
+      <div style="font-size:10px;color:var(--t2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Recent</div>
+      <div id="b2-log"><div class="notice">No transactions</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Cash in hand</h3></div>
+      <div class="ff" style="margin-bottom:10px"><label>Opening cash — month start (₹)</label><input type="number" id="cash-ob" placeholder="0" style="font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;width:100%;font-family:inherit" oninput="calcCash()"></div>
+      <div class="live-box">
+        <div class="dr"><span class="dl">Month opening</span><span class="dv" id="c-o">₹0</span></div>
+        <div class="dr"><span class="dl">+ Cash sales</span><span class="dv g" id="c-cr">₹0</span></div>
+        <div class="dr"><span class="dl">- Cash expenses</span><span class="dv r" id="c-ex">₹0</span></div>
+        <div class="dr"><span class="dl">- Cash purchases</span><span class="dv r" id="c-pur">₹0</span></div>
+        <div class="dr tot"><span class="dl">Cash in hand</span><span class="dv g" id="c-cl">₹0</span></div>
+      </div>
+      <div style="font-size:10px;color:var(--t2);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Denomination count</div>
+      <div id="denom"></div>
+      <div class="divider"></div>
+      <div class="dr"><span class="dl">Counted total</span><span class="dv g" id="d-tot">₹0</span></div>
+      <div class="dr"><span class="dl">Difference from expected</span><span class="dv" id="d-diff">₹0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ REPORTS ════════════════ -->
+<div class="page" id="pg-reports">
+  <div class="card">
+    <div class="ch"><h3>Report builder</h3></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div class="ff" style="min-width:180px"><label>Report type</label>
+        <select id="rpt-type" onchange="buildReport()" style="font-size:12px;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit">
+          <option value="pnl">P&L summary</option><option value="sales">Sales by category</option>
+          <option value="purchase">Purchase & RTGS</option><option value="expense">Expenses</option>
+          <option value="overview">Business overview</option>
+        </select>
+      </div>
+      <button class="btn bf" onclick="buildReport()">Generate</button>
+      <button class="btn bo" onclick="window.print()">Print / Export</button>
+    </div>
+  </div>
+  <div id="rpt-out"></div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// SUPABASE INIT
+// ══════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://fnrdgozpefslykhdztqe.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucmRnb3pwZWZzbHlraGR6dHFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTUxNzQsImV4cCI6MjA5MTY3MTE3NH0.KfUih48YWyg9KedKrrpgfhj4S6mHDcc_dGuHwySRkDk'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+const R  = n => '₹' + Math.round(n).toLocaleString('en-IN')
+const N  = n => Math.round(n).toLocaleString('en-IN')
+const $  = id => document.getElementById(id)
+const set= (id,v) => { const e=$(id); if(e) e.innerHTML=v }
+const fv = id => parseFloat($(id)?.value)||0
+const td = () => new Date().toISOString().split('T')[0]
+
+let _user = null
+let _banks = []
+let _reports = []       // stock reports array
+let _items = {}         // report_id => items array
+let _detections = {}    // report_id => detections array
+let _sales = []
+let _purchases = []
+let _transfers = []
+let _expenses = []
+let _cats = {}          // { catName: [subNames] }
+let _mvFil = 'ALL', _mvSrch = '', _trkSrch = '', _trkCat = 'ALL', _anlRange = 'all'
+let _pendingPurItems = []
+
+function toast(msg, err=false) {
+  const t = $('toast')
+  t.textContent = msg
+  t.style.color = err ? 'var(--red)' : 'var(--grn)'
+  t.style.opacity = '1'
+  clearTimeout(t._t)
+  t._t = setTimeout(() => t.style.opacity = '0', 3200)
+}
+
+function showLoading(id) { set(id, '<div class="loading"><div class="spin"></div>Loading...</div>') }
+function closeModal(id)  { $(id).classList.remove('show') }
+
+function setBtn(id, loading, label) {
+  const b = $(id); if(!b) return
+  b.disabled = loading
+  b.textContent = loading ? 'Saving...' : label
+}
+
+function todayFmt() {
+  return new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
+}
+
+function modeLabel(m) {
+  return {cash:'Cash',upi:'UPI',rtgs:'RTGS',bank1:'Hotel Siruvani',bank2:'SW Club'}[m] || m
+}
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+function switchTab(tab, el) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('on'))
+  el.classList.add('on')
+  ;['login','reset'].forEach(t => { const el2=$('tab-'+t); if(el2) el2.style.display = t === tab ? '' : 'none' })
+}
+
+async function doLogin() {
+  const email = $('l-email').value.trim(), pass = $('l-pass').value
+  $('login-err').style.display = 'none'
+  setBtn('login-btn', true, 'Sign in')
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+  setBtn('login-btn', false, 'Sign in')
+  if (error) {
+    const msg = error.message.includes('Invalid') ? 'Incorrect email or password' :
+                error.message.includes('Email not confirmed') ? 'Please confirm your email first — check your inbox' :
+                error.message.includes('signup') || error.message.includes('disabled') ? 'Account access restricted. Contact admin.' :
+                error.message
+    $('login-err').textContent = msg; $('login-err').style.display = 'block'; return
+  }
+}
+
+// Signup disabled — admin invites users from Supabase dashboard
+
+async function doReset() {
+  const email = $('r-email').value.trim()
+  $('reset-err').style.display = 'none'; $('reset-ok').style.display = 'none'
+  setBtn('reset-btn', true, 'Sending...')
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href })
+  setBtn('reset-btn', false, 'Send reset link')
+  if (error) { $('reset-err').textContent = error.message; $('reset-err').style.display = 'block'; return }
+  $('reset-ok').textContent = 'Reset link sent to ' + email + '. Check your email.'
+  $('reset-ok').style.display = 'block'
+}
+
+async function doLogout() {
+  await sb.auth.signOut()
+}
+
+// Listen for auth state changes
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    _user = session.user
+    $('auth-wrap').style.display = 'none'
+    $('app').style.display = 'flex'
+    $('tbd').textContent = todayFmt()
+    await initApp()
+  } else {
+    _user = null
+    $('auth-wrap').style.display = 'flex'
+    $('app').style.display = 'none'
+  }
+})
+
+// ══════════════════════════════════════════════════
+// APP INIT
+// ══════════════════════════════════════════════════
+async function initApp() {
+  // Set profile
+  const { data: profile } = await sb.from('profiles').select('full_name,role').eq('id', _user.id).single()
+  const name = profile?.full_name || _user.email?.split('@')[0] || 'Admin'
+  $('sb-name').textContent = name
+  $('sb-av').textContent   = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)
+
+  // Set today on all date inputs
+  const today = td()
+  ;['se-dt','rt-dt','cd-dt','cig-dt','tx-dt','e-dt','stk-dt','me-date'].forEach(id => {
+    const el = $(id); if (el && !el.value) el.value = today
+  })
+
+  // Load all data
+  await Promise.all([loadBanks(), loadSales(), loadPurchases(), loadTransfers(), loadExpenses(), loadStockReports()])
+  renderDash()
+  renderDenom()
+  renderCatTree()
+  calcRTGS(); calcTxfr()
+  buildReport()
+}
+
+// ══════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'))
+  document.querySelectorAll('.si').forEach(s => s.classList.remove('on'))
+  $('pg-' + id).classList.add('on'); el.classList.add('on')
+  const T = {dash:'Dashboard',sales:'Sales entry',purchase:'Purchase',expense:'Expenses',stock:'Stock intel',bank:'Bank & cash',reports:'Reports'}
+  $('tbt').textContent = T[id] || id
+  if (id === 'dash')    renderDash()
+  if (id === 'bank')    renderBankPage()
+  if (id === 'reports') buildReport()
+  if (id === 'purchase'){calcRTGS(); calcTxfr()}
+}
+
+// ══════════════════════════════════════════════════
+// DATA LOADERS
+// ══════════════════════════════════════════════════
+async function loadBanks() {
+  const { data } = await sb.from('bank_accounts').select('*').eq('is_active', true).order('created_at')
+  _banks = data || []
+  // Populate bank selects
+  const opts = _banks.map(b => `<option value="${b.id}" data-paytm="${b.paytm_linked}">${b.name}</option>`).join('')
+  ;['rt-bk'].forEach(id => { const el=$(id); if(el) el.innerHTML = opts })
+  renderBankPage()
+}
+
+async function loadSales() {
+  const { data } = await sb.from('sales_entries').select('*').order('entry_date',{ascending:false})
+  _sales = data || []
+  renderSalesLog()
+  calcSalesBankPreview()
+}
+
+async function loadPurchases() {
+  const { data } = await sb.from('purchases').select('*').order('purchase_date',{ascending:false})
+  _purchases = data || []
+  renderPurLog()
+}
+
+async function loadTransfers() {
+  const { data } = await sb.from('bank_transfers').select('*').order('transfer_date',{ascending:false})
+  _transfers = data || []
+  renderTxfrLog()
+}
+
+async function loadExpenses() {
+  const { data: cats } = await sb.from('expense_categories').select('*').order('name')
+  _cats = {}
+  if (cats) {
+    const top = cats.filter(c => !c.parent_id)
+    const sub = cats.filter(c => c.parent_id)
+    top.forEach(t => {
+      _cats[t.name] = { id: t.id, subs: sub.filter(s => s.parent_id === t.id).map(s => ({name:s.name,id:s.id})) }
+    })
+  }
+  const { data } = await sb.from('expenses').select('*').order('expense_date',{ascending:false})
+  _expenses = data || []
+  renderExpLog(); renderCatTree()
+}
+
+async function loadStockReports() {
+  const { data: rpts } = await sb.from('stock_reports').select('*').order('report_date',{ascending:true})
+  _reports = rpts || []
+
+  // Load items for all reports
+  if (_reports.length) {
+    const ids = _reports.map(r => r.id)
+    const { data: items } = await sb.from('stock_report_items').select('*').in('report_id', ids).order('category').order('item_name')
+    const { data: dets }  = await sb.from('purchase_detections').select('*').in('report_id', ids)
+    _items = {}; _detections = {}
+    ;(items||[]).forEach(it => { if(!_items[it.report_id]) _items[it.report_id] = []; _items[it.report_id].push(it) })
+    ;(dets||[]).forEach(d  => { if(!_detections[d.report_id]) _detections[d.report_id] = []; _detections[d.report_id].push(d) })
+  }
+  updateRptSelects()
+  renderRptList()
+  renderSum(); renderMv(); renderTrk(); renderAnl(); renderPurDet()
+}
+
+// ══════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════
+function renderDash() {
+  const totRev    = _reports.reduce((a,r) => a + (r.sales_srate||0), 0)
+  const totCOGS   = _reports.reduce((a,r) => a + (r.sales_prate||0), 0)
+  const totProfit = totRev - totCOGS
+  const totUnits  = _reports.reduce((a,r) => a + (r.units_sold||0), 0)
+  const totExp    = _expenses.reduce((a,e) => a + (e.amount||0), 0)
+  const totRTGS   = _purchases.filter(p=>p.purchase_type==='tasmac_rtgs').reduce((a,p)=>a+p.amount,0)
+  const last      = _reports[_reports.length-1]
+
+  const b1 = getBankBal(1), b2 = getBankBal(2), cash = getCashBal()
+
+  $('dash-krow').innerHTML = `
+    <div class="kc g"><div class="kl">Net profit</div><div class="kv">${R(totProfit)}</div><div class="ks">${_reports.length} report(s) · S.Rate−P.Rate</div></div>
+    <div class="kc"><div class="kl">Revenue (S.Rate)</div><div class="kv">${R(totRev)}</div></div>
+    <div class="kc r"><div class="kl">COGS (P.Rate)</div><div class="kv">${R(totCOGS)}</div></div>
+    <div class="kc"><div class="kl">Units sold</div><div class="kv">${N(totUnits)}</div></div>
+    <div class="kc b"><div class="kl">Hotel Siruvani</div><div class="kv">${R(b1)}</div><div class="ks">Bank 1 · Paytm 1</div></div>
+    <div class="kc b"><div class="kl">SW Club</div><div class="kv">${R(b2)}</div><div class="ks">Bank 2 · Paytm 2</div></div>
+    <div class="kc a"><div class="kl">Cash in hand</div><div class="kv">${R(cash)}</div></div>
+    ${last ? `<div class="kc"><div class="kl">Closing stock</div><div class="kv" style="font-size:15px">${R(last.closing_prate)}</div><div class="ks">${last.label} @ P.Rate</div></div>` : ''}
+    ${_reports.length === 0 ? `<div class="kc" style="grid-column:1/-1;background:var(--bbd);border-color:#1d3a6e"><div class="kl" style="color:var(--blu);font-size:12px;font-weight:700">👋 Welcome to Siruvani Bar ERP</div><div style="font-size:11px;color:var(--t1);margin-top:6px;line-height:1.9">1. <b style="color:var(--t0)">Bank & cash</b> — Set opening balances for Hotel Siruvani & SW Club (once at month start)<br>2. <b style="color:var(--t0)">Stock intel</b> — Upload your closing stock PDF → enter grand totals + item rows<br>3. <b style="color:var(--t0)">Sales entry</b> — Enter daily sales (Paytm 1→Hotel Siruvani, Paytm 2→SW Club)<br>4. <b style="color:var(--t0)">Purchase</b> — TASMAC RTGS | Cash purchases | Inter-bank transfer</div></div>` : ''}
+  `
+
+  // Sales breakdown
+  const keys = ['liquor','express','food','snacks_token','ac_charges','cooldrink','cigarette','empty_bottle','other_sales']
+  const LBL  = {liquor:'Liquor',express:'Express',food:'Food',snacks_token:'Snacks token',ac_charges:'AC charges',cooldrink:'Cooldrinks',cigarette:'Cigarettes',empty_bottle:'Empty bottles',other_sales:'Other'}
+  const tots = {}; keys.forEach(k => tots[k] = _sales.reduce((a,s) => a+(s[k]||0), 0))
+  const gross = Object.values(tots).reduce((a,v)=>a+v,0)
+  if (gross > 0) {
+    const disc = _sales.reduce((a,s)=>a+(s.discount||0),0)
+    $('dash-sales').innerHTML = Object.entries(tots).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+      `<div class="dr"><span class="dl">${LBL[k]}</span><span class="dv g">${R(v)}</span></div>`
+    ).join('') + `<div class="divider"></div><div class="dr tot"><span class="dl">Grand total (net)</span><span class="dv g" style="font-size:16px">${R(gross-disc)}</span></div>`
+  } else $('dash-sales').innerHTML = '<div class="notice">Add sales in Sales Entry tab</div>'
+
+  // P&L from reports
+  $('dash-pnl').innerHTML = _reports.length ? _reports.slice(-10).map(r =>
+    `<div class="dr"><span class="dl">${r.label}</span><span class="dv g">${R(r.net_profit||0)}</span></div>`
+  ).join('') + `<div class="divider"></div><div class="dr tot"><span class="dl">Total profit</span><span class="dv g" style="font-size:16px">${R(totProfit)}</span></div>`
+  : '<div class="notice">Upload stock reports to see P&L</div>'
+
+  // Top movers
+  const imap = {}
+  _reports.forEach(r => (_items[r.id]||[]).forEach(it => {
+    if(!imap[it.item_name]) imap[it.item_name]={sale:0,rev:0,cat:it.category}
+    imap[it.item_name].sale += it.units_sold; imap[it.item_name].rev += it.day_revenue||0
+  }))
+  const top = Object.entries(imap).filter(([,v])=>v.sale>0).sort((a,b)=>b[1].sale-a[1].sale).slice(0,10)
+  const mx = top[0]?.[1].sale||1
+  $('dash-top').innerHTML = top.length ? top.map(([n,v],i) =>
+    `<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span style="color:var(--t1)">${i+1}. ${n} <span class="badge bb" style="font-size:8px">${v.cat}</span></span><span style="font-weight:600">${N(v.sale)} · ${R(v.rev)}</span></div><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(v.sale/mx*100)}%;background:var(--grn)"></div></div></div>`
+  ).join('') : '<div class="notice">Upload stock reports</div>'
+
+  // Purchase detection summary
+  const allDets = Object.values(_detections).flat().filter(d=>d.detection_method==='purch_column')
+  if (allDets.length) {
+    $('dash-pur-det').innerHTML = allDets.slice(0,5).map(d =>
+      `<div class="dr"><span class="dl">${d.item_name} <span class="badge bb">${d.category||''}</span></span><span class="dv ${d.confirmed?'g':'a'}">+${d.purch_qty} · ${R(d.purchase_value||0)} ${d.confirmed?'✓':''}</span></div>`
+    ).join('') + `<div class="formula">Total Purch col purchases: ${allDets.length} items detected</div>`
+  } else $('dash-pur-det').innerHTML = '<div class="notice">No Purch column entries found in loaded reports</div>'
+}
+
+// ══════════════════════════════════════════════════
+// SALES
+// ══════════════════════════════════════════════════
+function calcS() {
+  const keys = ['s-liq','s-exp','s-food','s-snk','s-ac','s-cool','s-cig','s-bot','s-oth']
+  const gross = keys.reduce((a,id) => a+fv(id), 0)
+  const disc  = fv('s-disc'), p1=fv('s-p1'), p2=fv('s-p2'), cash=fv('s-cash'), pend=fv('s-pend')
+  set('lc-g',  R(gross)); set('lc-n', R(gross-disc))
+  set('lc-c',  R(cash+p1+p2+pend)); set('lc-b1', R(p1)); set('lc-b2', R(p2))
+  calcSalesBankPreview(p1, p2)
+}
+function calcSalesBankPreview(newP1=0, newP2=0) {
+  const b1  = _banks.find(b=>b.paytm_linked==='Paytm 1')
+  const b2  = _banks.find(b=>b.paytm_linked==='Paytm 2')
+  const p1t = _sales.reduce((a,s)=>a+(s.paytm1_collected||0), 0)
+  const p2t = _sales.reduce((a,s)=>a+(s.paytm2_collected||0), 0)
+  const b1Ob = b1?.opening_balance||0, b2Ob = b2?.opening_balance||0
+  set('bp-b1o', R(b1Ob)); set('bp-b2o', R(b2Ob))
+  set('bp-b1c', R(p1t+newP1)); set('bp-b2c', R(p2t+newP2))
+  set('bp-b1n', R(getBankBal(1)+newP1)); set('bp-b2n', R(getBankBal(2)+newP2))
+}
+async function saveSales() {
+  const keys = ['liquor','express','food','snacks_token','ac_charges','cooldrink','cigarette','empty_bottle','other_sales']
+  const ids  = ['s-liq','s-exp','s-food','s-snk','s-ac','s-cool','s-cig','s-bot','s-oth']
+  const vals = {}; keys.forEach((k,i) => vals[k] = fv(ids[i]))
+  const gross = Object.values(vals).reduce((a,v)=>a+v,0)
+  const disc=fv('s-disc'), p1=fv('s-p1'), p2=fv('s-p2'), cash=fv('s-cash'), pend=fv('s-pend')
+  if(gross===0&&p1===0&&p2===0&&cash===0){toast('Enter at least one amount',true);return}
+  setBtn('save-sales-btn',true,'Save entry')
+  const { error } = await sb.from('sales_entries').insert({ ...vals, user_id:_user.id, entry_date:$('se-dt').value, shift:$('se-shift').value, discount:disc, cash_collected:cash, paytm1_collected:p1, paytm2_collected:p2, pending_receivable:pend })
+  setBtn('save-sales-btn',false,'Save entry')
+  if(error){toast('Error: '+error.message,true);return}
+  toast(`Sales saved — ${R(gross)}${p1>0?' | Paytm 1: '+R(p1)+' → Hotel Siruvani':''}${p2>0?' | Paytm 2: '+R(p2)+' → SW Club':''}`  )
+  clearSales(); await loadSales(); renderDash()
+}
+function clearSales() {
+  ;['s-liq','s-exp','s-food','s-snk','s-ac','s-cool','s-cig','s-bot','s-oth','s-disc','s-cash','s-p1','s-p2','s-pend'].forEach(id=>{const e=$(id);if(e)e.value=''})
+  calcS()
+}
+function renderSalesLog() {
+  $('se-ct').textContent = _sales.length + ' entries'
+  $('se-log').innerHTML = _sales.length ? _sales.slice(0,20).map(e =>
+    `<div class="dr" style="font-size:11px"><span class="dl">${e.entry_date} <span style="color:var(--t2)">${e.shift}</span></span><span class="dv g">${R(e.gross_sales||0)}</span></div>`
+  ).join('') : '<div class="notice">No entries yet</div>'
+}
+
+// ══════════════════════════════════════════════════
+// PURCHASE — BANK BALANCE HELPERS
+// ══════════════════════════════════════════════════
+function getBankBal(n) {
+  const bk  = _banks.find(b => b.paytm_linked === 'Paytm ' + n)
+  if (!bk) return 0
+  const ob  = bk.opening_balance||0
+  const cr  = _sales.reduce((a,s) => a + (n===1?(s.paytm1_collected||0):(s.paytm2_collected||0)), 0)
+  const rt  = _purchases.filter(p=>p.purchase_type==='tasmac_rtgs'&&p.bank_account_id===bk.id).reduce((a,p)=>a+p.amount,0)
+  const pur = _purchases.filter(p=>p.purchase_type!=='tasmac_rtgs'&&p.payment_mode===(n===1?'bank1':'bank2')).reduce((a,p)=>a+p.amount,0)
+  const ex  = _expenses.filter(e=>e.payment_mode===(n===1?'bank1':'bank2')).reduce((a,e)=>a+e.amount,0)
+  const trOut = _transfers.filter(t=>t.from_account_id===bk.id).reduce((a,t)=>a+t.amount,0)
+  const trIn  = _transfers.filter(t=>t.to_account_id===bk.id).reduce((a,t)=>a+t.amount,0)
+  return ob + cr - rt - pur - ex - trOut + trIn
+}
+function getCashBal() {
+  const ob  = parseFloat($('cash-ob')?.value)||0
+  const cr  = _sales.reduce((a,s)=>a+(s.cash_collected||0),0)
+  const ex  = _expenses.filter(e=>e.payment_mode==='cash').reduce((a,e)=>a+e.amount,0)
+  const pur = _purchases.filter(p=>p.payment_mode==='cash').reduce((a,p)=>a+p.amount,0)
+  return ob + cr - ex - pur
+}
+function calcCash() { renderBankPage() }
+
+// ══════════════════════════════════════════════════
+// PURCHASE — RTGS
+// ══════════════════════════════════════════════════
+function calcRTGS() {
+  const bkId = $('rt-bk')?.value
+  const bk   = _banks.find(b=>b.id===bkId)
+  const bkN  = bk?.paytm_linked==='Paytm 1'?1:2
+  const bal  = bk ? getBankBal(bkN) : 0
+  const amt  = fv('rt-amt')
+  set('rt-lbl', (bk?.name||'Bank') + ' available')
+  set('rt-bal', R(bal))
+  set('rt-aft', `<span style="color:${bal-amt<0?'var(--red)':'var(--t0)'}">${R(bal-amt)}</span>`)
+}
+async function saveRTGS() {
+  const bkId = $('rt-bk')?.value, amt=fv('rt-amt'), utr=$('rt-utr')?.value||null, dt=$('rt-dt')?.value||td()
+  if(!bkId||!amt){toast('Enter amount and select bank',true);return}
+  setBtn('save-rtgs-btn',true,'Save RTGS...')
+  const { error } = await sb.from('purchases').insert({ user_id:_user.id, purchase_date:dt, purchase_type:'tasmac_rtgs', description:'Liquor purchase — TASMAC', amount:amt, payment_mode:'rtgs', bank_account_id:bkId, utr_reference:utr })
+  setBtn('save-rtgs-btn',false,'Save RTGS — debit from bank')
+  if(error){toast('Error: '+error.message,true);return}
+  const bk = _banks.find(b=>b.id===bkId)
+  toast(`RTGS saved — ${R(amt)} debited from ${bk?.name}`)
+  $('rt-amt').value='';$('rt-utr').value='';
+  await loadPurchases(); calcRTGS(); renderDash(); renderBankPage()
+}
+
+// ══════════════════════════════════════════════════
+// PURCHASE — OTHER (COOLDRINK / CIGARETTE / OTHER)
+// ══════════════════════════════════════════════════
+function calcOth(pfx) {
+  const amt=fv(pfx+'-amt'), mode=$(pfx+'-mode')?.value||'cash'
+  const bal = mode==='cash'?getCashBal():mode==='bank1'?getBankBal(1):mode==='bank2'?getBankBal(2):null
+  const balStr = bal!==null ? ` (available: ${R(bal)})` : ''
+  const lbl = {cash:`Cash in hand −${R(amt)}${balStr}`,upi:`UPI (tracked manually)`,bank1:`Hotel Siruvani −${R(amt)}${balStr}`,bank2:`SW Club −${R(amt)}${balStr}`}
+  set(pfx+'-eff', lbl[mode]||'—')
+  // Warn if insufficient
+  const effEl = $(pfx+'-eff')
+  if(effEl && bal !== null && amt > bal) effEl.style.color = 'var(--red)'
+  else if(effEl) effEl.style.color = 'var(--red)'
+}
+async function saveOthPur(type, pfx) {
+  const amt=fv(pfx+'-amt'), mode=$(pfx+'-mode')?.value||'cash'
+  const desc=$(pfx+'-desc')?.value||type, dt=$(pfx+'-dt')?.value||td()
+  if(!amt){toast('Enter amount',true);return}
+  const bkId = mode==='bank1'?_banks.find(b=>b.paytm_linked==='Paytm 1')?.id:mode==='bank2'?_banks.find(b=>b.paytm_linked==='Paytm 2')?.id:null
+  const btn  = {cooldrink:'save-cd-btn',cigarette:'save-cig-btn',other:'save-oth-btn'}[type]
+  setBtn(btn,true,'Saving...')
+  const { error } = await sb.from('purchases').insert({ user_id:_user.id, purchase_date:dt, purchase_type:type, description:desc, amount:amt, payment_mode:mode, bank_account_id:bkId||null })
+  setBtn(btn,false,type==='cooldrink'?'Save cooldrink purchase':type==='cigarette'?'Save cigarette purchase':'Save other purchase')
+  if(error){toast('Error: '+error.message,true);return}
+  toast(`${type} purchase saved — ${R(amt)} via ${modeLabel(mode)}`)
+  $(pfx+'-amt').value=''; if($(pfx+'-desc'))$(pfx+'-desc').value=''
+  await loadPurchases(); calcOth(pfx); renderDash(); renderBankPage()
+}
+
+function renderPurLog() {
+  const el=$('pur-log')
+  $('pur-ct').textContent=_purchases.length
+  if(!_purchases.length){el.innerHTML='<div class="notice">No purchases recorded</div>';return}
+  const col={tasmac_rtgs:'var(--blu)',cooldrink:'var(--grn)',cigarette:'var(--amb)',other:'var(--t1)'}; const mode_col={cash:'var(--red)',rtgs:'var(--blu)',upi:'var(--amb)',bank1:'var(--blu)',bank2:'var(--blu)'}
+  el.innerHTML=_purchases.slice(0,30).map(p=>
+    `<div class="srow"><div><div class="sn">${p.description||p.purchase_type}</div><div class="sm">${p.purchase_date} · <span style="color:${mode_col[p.payment_mode]||'var(--t2)'}">${modeLabel(p.payment_mode)}</span>${p.utr_reference?' · UTR: '+p.utr_reference:''}</div></div><div class="sv" style="color:${col[p.purchase_type]||'var(--t1)'}">-${R(p.amount)}</div></div>`
+  ).join('')
+  const tot=_purchases.reduce((a,p)=>a+p.amount,0)
+  const rtgs=_purchases.filter(p=>p.purchase_type==='tasmac_rtgs').reduce((a,p)=>a+p.amount,0)
+  const cashP=_purchases.filter(p=>p.payment_mode==='cash').reduce((a,p)=>a+p.amount,0)
+  const upiP=_purchases.filter(p=>p.payment_mode==='upi').reduce((a,p)=>a+p.amount,0)
+  set('pur-total',R(tot));set('ps-rtgs',R(rtgs));set('ps-cash',R(cashP));set('ps-upi',R(upiP))
+  set('rtgs-tot',R(rtgs))
+  const bk1=_banks.find(b=>b.paytm_linked==='Paytm 1'), bk2=_banks.find(b=>b.paytm_linked==='Paytm 2')
+  const rtgsB1=_purchases.filter(p=>p.purchase_type==='tasmac_rtgs'&&p.bank_account_id===bk1?.id).reduce((a,p)=>a+p.amount,0)
+  const rtgsB2=_purchases.filter(p=>p.purchase_type==='tasmac_rtgs'&&p.bank_account_id===bk2?.id).reduce((a,p)=>a+p.amount,0)
+  if($('rtgs-b1')) set('rtgs-b1',R(rtgsB1))
+  if($('rtgs-b2')) set('rtgs-b2',R(rtgsB2))
+  const lastUtr=_purchases.filter(p=>p.utr_reference)[0]?.utr_reference||'—'
+  $('rtgs-utr').textContent=lastUtr
+}
+
+// ══════════════════════════════════════════════════
+// INTER-BANK TRANSFER
+// ══════════════════════════════════════════════════
+function calcTxfr() {
+  const dir=$('tx-dir')?.value||'1to2',amt=fv('tx-amt')
+  const isH=dir==='1to2', b1=getBankBal(1), b2=getBankBal(2)
+  const fromB=isH?b1:b2, toB=isH?b2:b1
+  const fromN=isH?'Hotel Siruvani':'SW Club', toN=isH?'SW Club':'Hotel Siruvani'
+  set('tv-fn',fromN);set('tv-fb',R(fromB));set('tv-tn',toN);set('tv-tb',R(toB))
+  set('tv-amt',amt>0?R(amt):'₹0')
+  set('tv-afl',fromN+' after');set('tv-atl',toN+' after')
+  set('tv-afv',`<span style="color:${fromB-amt<0?'var(--red)':'var(--t0)'}">${R(fromB-amt)}</span>`)
+  set('tv-atv',`<span style="color:var(--grn)">${R(toB+amt)}</span>`)
+}
+async function saveTxfr() {
+  const dir=$('tx-dir')?.value||'1to2', amt=fv('tx-amt')
+  const ref=$('tx-ref')?.value||null, utr=$('tx-utr')?.value||null, dt=$('tx-dt')?.value||td()
+  if(!amt){toast('Enter transfer amount',true);return}
+  const fromBk=dir==='1to2'?_banks.find(b=>b.paytm_linked==='Paytm 1'):_banks.find(b=>b.paytm_linked==='Paytm 2')
+  const toBk  =dir==='1to2'?_banks.find(b=>b.paytm_linked==='Paytm 2'):_banks.find(b=>b.paytm_linked==='Paytm 1')
+  if(!fromBk||!toBk){toast('Bank accounts not found',true);return}
+  const fromBal=dir==='1to2'?getBankBal(1):getBankBal(2)
+  if(fromBal<amt&&!confirm(`${fromBk.name} only has ${R(fromBal)}. Transfer ${R(amt)} anyway?`))return
+  setBtn('save-txfr-btn',true,'Saving...')
+  const { error } = await sb.from('bank_transfers').insert({ user_id:_user.id, transfer_date:dt, from_account_id:fromBk.id, to_account_id:toBk.id, amount:amt, reason:ref, utr_reference:utr })
+  setBtn('save-txfr-btn',false,'Execute transfer')
+  if(error){toast('Error: '+error.message,true);return}
+  toast(`Transferred ${R(amt)} — ${fromBk.name} → ${toBk.name}`)
+  $('tx-amt').value='';$('tx-ref').value='';$('tx-utr').value='';
+  await loadTransfers(); calcTxfr(); renderDash(); renderBankPage()
+}
+function renderTxfrLog() {
+  const el=$('txfr-log')
+  $('txfr-ct').textContent=_transfers.length+' transfers'
+  if(!_transfers.length){el.innerHTML='<div class="notice">No transfers yet</div>';return}
+  el.innerHTML=_transfers.slice(0,20).map(t=>{
+    const fromN=_banks.find(b=>b.id===t.from_account_id)?.name||'?'
+    const toN  =_banks.find(b=>b.id===t.to_account_id)?.name||'?'
+    return`<div class="srow"><div><div class="sn">${fromN} → ${toN}</div><div class="sm">${t.transfer_date}${t.reason?' · '+t.reason:''}${t.utr_reference?' · UTR: '+t.utr_reference:''}</div></div><div class="sv" style="color:var(--amb)">${R(t.amount)}</div></div>`
+  }).join('')
+}
+
+// ══════════════════════════════════════════════════
+// EXPENSE — AUTOCOMPLETE
+// ══════════════════════════════════════════════════
+function acF(type) {
+  const val=(type==='cat'?$('ec-in'):$('es-in'))?.value?.toLowerCase()||''
+  const items=type==='cat'?Object.keys(_cats):((_cats[$('ec-in')?.value]?.subs||[]).map(s=>s.name))
+  const filt=items.filter(x=>x.toLowerCase().includes(val))
+  const drop=$('acd-'+type); const trim=val.trim()
+  let html=filt.map(x=>`<div class="acdi" onmousedown="acSel('${type}','${x}')">${x}</div>`).join('')
+  if(trim&&!items.find(x=>x.toLowerCase()===trim))html+=`<div class="acdi acdi-new" onmousedown="acNew('${type}','${trim}')">+ Create "${trim}"</div>`
+  drop.innerHTML=html||`<div class="acdi" style="color:var(--t2)">Type to create new</div>`
+}
+function acO(type){acF(type);$('acd-'+type).classList.add('open')}
+function acC(type){$('acd-'+type).classList.remove('open')}
+function acSel(type,val){(type==='cat'?$('ec-in'):$('es-in')).value=val;acC(type)}
+async function acNew(type,val) {
+  if(type==='cat') {
+    if(!_cats[val]) {
+      const {data} = await sb.from('expense_categories').insert({user_id:_user.id,name:val,parent_id:null}).select().single()
+      if(data) _cats[val]={id:data.id,subs:[]}
+    }
+  } else {
+    const cat=$('ec-in')?.value; const catObj=_cats[cat]
+    if(cat&&catObj&&!catObj.subs.find(s=>s.name===val)) {
+      const {data} = await sb.from('expense_categories').insert({user_id:_user.id,name:val,parent_id:catObj.id}).select().single()
+      if(data) catObj.subs.push({name:val,id:data.id})
+    }
+  }
+  acSel(type,val); renderCatTree()
+}
+async function saveExpense() {
+  const cat=$('ec-in')?.value?.trim(), sub=$('es-in')?.value?.trim()
+  const mode=$('e-mode')?.value||'cash', amt=fv('e-amt'), dt=$('e-dt')?.value||td()
+  const desc=$('e-desc')?.value?.trim()||null
+  if(!cat||!amt){toast('Enter category and amount',true);return}
+  // Ensure category exists
+  if(!_cats[cat]) {
+    const {data} = await sb.from('expense_categories').insert({user_id:_user.id,name:cat,parent_id:null}).select().single()
+    if(data) _cats[cat]={id:data.id,subs:[]}
+  }
+  const catId=_cats[cat]?.id||null
+  let subId=null
+  if(sub&&catId) {
+    let subObj=_cats[cat].subs.find(s=>s.name===sub)
+    if(!subObj){const{data}=await sb.from('expense_categories').insert({user_id:_user.id,name:sub,parent_id:catId}).select().single();if(data){_cats[cat].subs.push({name:sub,id:data.id});subObj={name:sub,id:data.id}}}
+    subId=subObj?.id||null
+  }
+  const bkId=mode==='bank1'?_banks.find(b=>b.paytm_linked==='Paytm 1')?.id:mode==='bank2'?_banks.find(b=>b.paytm_linked==='Paytm 2')?.id:null
+  setBtn('save-exp-btn',true,'Saving...')
+  const { error } = await sb.from('expenses').insert({ user_id:_user.id, expense_date:dt, category_id:catId, category_name:cat, sub_category:sub||null, amount:amt, payment_mode:mode, bank_account_id:bkId||null, description:desc })
+  setBtn('save-exp-btn',false,'Save expense')
+  if(error){toast('Error: '+error.message,true);return}
+  toast(`Expense saved — ${R(amt)} (${cat}${sub?' / '+sub:''})`)
+  $('e-amt').value='';$('ec-in').value='';$('es-in').value='';$('e-desc').value='';
+  await loadExpenses(); renderDash(); renderBankPage()
+}
+function renderExpLog() {
+  $('exp-ct').textContent=_expenses.length+' entries'
+  $('exp-log').innerHTML=_expenses.length?_expenses.slice(0,30).map(e=>
+    `<div class="dr" style="font-size:11px"><div><span style="font-weight:500">${e.category_name}${e.sub_category?' / '+e.sub_category:''}</span><div style="font-size:10px;color:var(--t2)">${e.expense_date} · ${modeLabel(e.payment_mode)}${e.description?' · '+e.description:''}</div></div><span class="dv r">-${R(e.amount)}</span></div>`
+  ).join('')+'<div class="dr tot"><span class="dl">Total</span><span class="dv r">'+R(_expenses.reduce((a,e)=>a+e.amount,0))+'</span></div>'
+  :'<div class="notice">No expenses</div>'
+}
+function renderCatTree() {
+  const el=$('cat-tree'); if(!el) return
+  el.innerHTML=Object.entries(_cats).length?Object.entries(_cats).map(([cat,obj])=>
+    `<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;margin-bottom:3px">${cat}</div>${(obj.subs||[]).map(s=>`<div style="font-size:11px;color:var(--t2);padding:2px 0 2px 12px;border-left:2px solid var(--bd2)">${s.name}</div>`).join('')}</div>`
+  ).join(''):'<div class="notice">No categories yet. Type in Category field to create.</div>'
+}
+
+// ══════════════════════════════════════════════════
+// BANK PAGE
+// ══════════════════════════════════════════════════
+async function saveBankOpening(n) {
+  const bk=_banks.find(b=>b.paytm_linked==='Paytm '+n)
+  if(!bk){toast('Bank not found',true);return}
+  const val=parseFloat($('b'+n+'-ob')?.value)||0
+  const { error } = await sb.from('bank_accounts').update({opening_balance:val,opening_date:td()}).eq('id',bk.id)
+  if(error){toast('Error: '+error.message,true);return}
+  bk.opening_balance=val; toast('Opening balance saved for '+bk.name); renderBankPage()
+}
+function renderBankPage() {
+  const b1=getBankBal(1), b2=getBankBal(2), cash=getCashBal()
+  const bk1=_banks.find(b=>b.paytm_linked==='Paytm 1')
+  const bk2=_banks.find(b=>b.paytm_linked==='Paytm 2')
+  // Bank 1
+  const b1cr=_sales.reduce((a,s)=>a+(s.paytm1_collected||0),0)
+  const b1rt=_purchases.filter(p=>p.purchase_type==='tasmac_rtgs'&&bk1&&p.bank_account_id===bk1.id).reduce((a,p)=>a+p.amount,0)
+  const b1pur=_purchases.filter(p=>p.purchase_type!=='tasmac_rtgs'&&p.payment_mode==='bank1').reduce((a,p)=>a+p.amount,0)
+  const b1ex=_expenses.filter(e=>e.payment_mode==='bank1').reduce((a,e)=>a+e.amount,0)
+  const b1trOut=_transfers.filter(t=>bk1&&t.from_account_id===bk1.id).reduce((a,t)=>a+t.amount,0)
+  const b1trIn=_transfers.filter(t=>bk1&&t.to_account_id===bk1.id).reduce((a,t)=>a+t.amount,0)
+  set('b1-o',R(bk1?.opening_balance||0));set('b1-cr',R(b1cr));set('b1-rt',R(b1rt));set('b1-ex',R(b1ex));set('b1-pur',R(b1pur));set('b1-tr', `<span style="color:${b1trIn-b1trOut>=0?'var(--grn)':'var(--red)'}">${b1trIn>=b1trOut?'+':''}${R(b1trIn-b1trOut)}</span>`);set('b1-cl',R(b1))
+  // Bank 2
+  const b2cr=_sales.reduce((a,s)=>a+(s.paytm2_collected||0),0)
+  const b2rt=_purchases.filter(p=>p.purchase_type==='tasmac_rtgs'&&bk2&&p.bank_account_id===bk2.id).reduce((a,p)=>a+p.amount,0)
+  const b2pur=_purchases.filter(p=>p.purchase_type!=='tasmac_rtgs'&&p.payment_mode==='bank2').reduce((a,p)=>a+p.amount,0)
+  const b2ex=_expenses.filter(e=>e.payment_mode==='bank2').reduce((a,e)=>a+e.amount,0)
+  const b2trOut=_transfers.filter(t=>bk2&&t.from_account_id===bk2.id).reduce((a,t)=>a+t.amount,0)
+  const b2trIn=_transfers.filter(t=>bk2&&t.to_account_id===bk2.id).reduce((a,t)=>a+t.amount,0)
+  set('b2-o',R(bk2?.opening_balance||0));set('b2-cr',R(b2cr));set('b2-rt',R(b2rt));set('b2-ex',R(b2ex));set('b2-pur',R(b2pur));set('b2-tr', `<span style="color:${b2trIn-b2trOut>=0?'var(--grn)':'var(--red)'}">${b2trIn>=b2trOut?'+':''}${R(b2trIn-b2trOut)}</span>`);set('b2-cl',R(b2))
+  // Cash
+  const cashCr=_sales.reduce((a,s)=>a+(s.cash_collected||0),0)
+  const cashEx=_expenses.filter(e=>e.payment_mode==='cash').reduce((a,e)=>a+e.amount,0)
+  const cashPur=_purchases.filter(p=>p.payment_mode==='cash').reduce((a,p)=>a+p.amount,0)
+  const cashOb=parseFloat($('cash-ob')?.value)||0
+  set('c-o',R(cashOb));set('c-cr',R(cashCr));set('c-ex',R(cashEx));set('c-pur',R(cashPur));set('c-cl',R(cash))
+  // Recent tx logs
+  $('b1-log').innerHTML='<div class="notice" style="padding:8px">Balance updates live from Sales Entry, Purchase & Expense tabs</div>'
+  $('b2-log').innerHTML='<div class="notice" style="padding:8px">Balance updates live from Sales Entry, Purchase & Expense tabs</div>'
+  // Denom diff
+  calcDenom()
+}
+function renderDenom() {
+  const el=$('denom'); if(!el) return
+  const ds=[500,200,100,50,20,10,5,2,1]
+  el.innerHTML=ds.map(d=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="min-width:30px;font-size:11px;color:var(--t2)">₹${d}</span><input type="number" min="0" value="0" data-d="${d}" style="width:64px;font-size:11px;padding:5px 7px;border:1px solid var(--bd2);border-radius:6px;background:var(--bg2);color:var(--t0);outline:none;font-family:inherit" oninput="calcDenom()"><span style="font-size:11px;color:var(--t2)">notes</span><span style="font-size:11px;min-width:60px;text-align:right;font-variant-numeric:tabular-nums" id="dn${d}">₹0</span></div>`).join('')
+}
+function calcDenom() {
+  let tot=0; document.querySelectorAll('#denom input').forEach(el=>{const d=parseInt(el.dataset.d),v=parseInt(el.value)||0,s=d*v;const dn=$('dn'+d);if(dn)dn.innerHTML=R(s);tot+=s})
+  set('d-tot',R(tot))
+  const expected=getCashBal()
+  const diff=tot-expected
+  set('d-diff',`<span style="color:${Math.abs(diff)>1?'var(--amb)':'var(--grn)'}">${R(diff)}</span>`)
+}
+
+// ══════════════════════════════════════════════════
+// STOCK INTEL
+// ══════════════════════════════════════════════════
+function updateRptSelects() {
+  const opts=_reports.length?_reports.map((r,i)=>`<option value="${i}">${r.label}</option>`).join(''):'<option value="-1">— Upload reports —</option>'
+  ;['sd','mvd'].forEach(id=>{const el=$(id);if(el){el.innerHTML=opts;if(_reports.length)el.value=_reports.length-1}})
+}
+function renderRptList() {
+  $('rpt-ct').textContent=_reports.length+' report'+(+(_reports.length!==1)?'s':'')
+  $('rpt-list').innerHTML=_reports.length?_reports.map((r,i)=>{
+    const p=r.net_profit||0
+      const purDetCt = (_detections[r.id]||[]).filter(d=>d.detection_method==='purch_column').length
+    return`<div class="srow"><div><div class="sn">${r.label} <span class="badge bb">Report ${i+1}</span>${purDetCt>0?`<span class="badge ba" style="margin-left:5px">${purDetCt} purchase${purDetCt>1?'s':''} detected</span>`:''}</div><div class="sm">${N(r.units_sold||0)} sold · ${N(r.units_closing||0)} closing · Purch col: ${N(r.units_purchased||0)} units</div></div><div style="text-align:right"><div class="sv">${R(p)}</div><div style="font-size:10px;color:var(--red);cursor:pointer;margin-top:2px" onclick="deleteReport('${r.id}')">Remove</div></div></div>`
+  }).join(''):'<div class="notice">No reports yet. Upload a PDF or click "+ Enter manually"</div>'
+}
+
+function handleStkUpload(inp) {
+  if(!inp.files[0])return
+  $('stk-fname').textContent=inp.files[0].name
+  openStkModal()
+  inp.value=''
+}
+function openStkModal() {
+  const dt=$('stk-dt')?.value||td()
+  $('me-date').value=dt; $('stk-fdate').textContent=dt
+  ;['me-obp','me-obs','me-pp','me-ps','me-sp','me-ss','me-cp','me-cs','me-ou','me-pu','me-us','me-cu'].forEach(id=>{ const e=$(id);if(e)e.value=''})
+  $('me-items').value=''
+  $('pur-modal').classList.remove('show')
+  $('stk-modal').classList.add('show')
+}
+
+async function saveStockReport() {
+  const mv=id=>parseFloat($(id)?.value)||0
+  if(!mv('me-ss')&&!mv('me-sp')){toast('Enter at least Sales P.Rate and S.Rate',true);return}
+  const dt=$('me-date')?.value||td()
+  const dateObj=new Date(dt+'T00:00:00')
+  const label=dateObj.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+
+  // Parse items
+  const itemRows=[]
+  ;($('me-items')?.value||'').split('\n').forEach(line=>{
+    line=line.trim(); if(!line)return
+    const p=line.split(','); if(p.length<8)return
+    itemRows.push({category:p[0].trim(),item_name:p[1].trim(),opening_stock:parseInt(p[2])||0,purch_col:parseInt(p[3])||0,units_sold:parseInt(p[4])||0,purchase_rate:parseFloat(p[6])||0,sale_rate:parseFloat(p[7])||0})
+  })
+
+  setBtn('stk-save-btn',true,'Saving...')
+  const payload={report_date:dt,label,ob_stock_purch:mv('me-obp'),op_stock_sales:mv('me-obs'),purchase_prate:mv('me-pp'),purchase_srate:mv('me-ps'),sales_prate:mv('me-sp'),sales_srate:mv('me-ss'),closing_prate:mv('me-cp'),closing_srate:mv('me-cs'),units_opening:parseInt($('me-ou')?.value)||0,units_purchased:parseInt($('me-pu')?.value)||0,units_sold:parseInt($('me-us')?.value)||0,units_closing:parseInt($('me-cu')?.value)||0}
+
+  // Upsert report
+  const {data:rptArr,error:rptErr}=await sb.from('stock_reports').upsert({...payload,user_id:_user.id},{onConflict:'user_id,report_date'}).select()
+  if(rptErr||!rptArr?.length){setBtn('stk-save-btn',false,'Save report');toast('Error: '+(rptErr?.message||'insert failed'),true);return}
+  const rpt=rptArr[0]
+
+  // Insert items
+  if(itemRows.length){
+    await sb.from('stock_report_items').delete().eq('report_id',rpt.id)
+    const rows=itemRows.map(it=>({...it,report_id:rpt.id,user_id:_user.id}))
+    await sb.from('stock_report_items').insert(rows)
+    // Auto-detect Purch column purchases
+    const purchItems=itemRows.filter(it=>it.purch_col>0)
+    if(purchItems.length){
+      await sb.from('purchase_detections').delete().eq('report_id',rpt.id)
+      await sb.from('purchase_detections').insert(purchItems.map(it=>({report_id:rpt.id,user_id:_user.id,item_name:it.item_name,category:it.category,detection_method:'purch_column',purch_qty:it.purch_col,purchase_rate:it.purchase_rate,sale_rate:it.sale_rate,confirmed:false})))
+    }
+  }
+  setBtn('stk-save-btn',false,'Save report')
+  closeModal('stk-modal')
+
+  // Show confirmation modal if any purch col items
+  const purchItems=itemRows.filter(it=>it.purch_col>0)
+  if(purchItems.length){
+    _pendingPurItems=purchItems
+    let tot=0
+    $('modal-items').innerHTML=`<table class="tbl" style="margin-bottom:10px"><thead><tr><th>Item</th><th>Cat</th><th class="n">Purch qty</th><th class="n">P.Rate</th><th class="n">Value</th></tr></thead><tbody>`+purchItems.map(it=>{const v=it.purch_col*it.purchase_rate;tot+=v;return`<tr><td style="font-weight:600">${it.item_name}</td><td><span class="badge bb">${it.category}</span></td><td class="n" style="color:var(--amb);font-weight:600">+${it.purch_col}</td><td class="n">₹${it.purchase_rate.toFixed(2)}</td><td class="n" style="color:var(--grn);font-weight:600">${R(v)}</td></tr>`}).join('')+'</tbody></table>'
+    set('modal-total',R(tot))
+    $('pur-modal').classList.add('show')
+  } else toast(`Report saved — ${label} | Profit: ${R(payload.sales_srate-payload.sales_prate)}`)
+
+  await loadStockReports(); renderDash()
+}
+
+async function deleteReport(id) {
+  if(!confirm('Remove this report? Cannot be undone.'))return
+  await sb.from('stock_reports').delete().eq('id',id)
+  await loadStockReports(); renderDash(); toast('Report removed','var(--amb)')
+}
+
+function confirmPurch() {
+  closeModal('pur-modal')
+  toast('Purchases confirmed. Log UTR in Purchase tab.')
+}
+function dismissPurch() { closeModal('pur-modal'); toast('Dismissed. Log manually in Purchase tab.','var(--amb)') }
+
+// ── STOCK TABS ───────────────────────────────────
+function stab(id, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'))
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'))
+  el.classList.add('on'); $('stp-'+id).classList.add('on')
+}
+
+function renderSum() {
+  const idx=parseInt($('sd')?.value); if(isNaN(idx)||idx<0||idx>=_reports.length){set('sum-content','<div class="notice">Upload stock reports to see P&L summary</div>');return}
+  const d=_reports[idx],profit=d.net_profit||0,margin=d.profit_margin||0
+  const items=_items[d.id]||[]
+  const cats={}; items.forEach(it=>{if(!cats[it.category])cats[it.category]={ss:0,sp:0,u:0};cats[it.category].ss+=it.day_revenue||0;cats[it.category].sp+=it.day_cogs||0;cats[it.category].u+=it.units_sold||0})
+  set('sum-content',`
+    <div class="krow" style="margin-bottom:14px">
+      <div class="kc g"><div class="kl">Net profit</div><div class="kv">${R(profit)}</div><div class="ks">S.Rate − P.Rate</div></div>
+      <div class="kc"><div class="kl">Revenue (S.Rate)</div><div class="kv">${R(d.sales_srate||0)}</div></div>
+      <div class="kc r"><div class="kl">COGS (P.Rate)</div><div class="kv">${R(d.sales_prate||0)}</div></div>
+      <div class="kc"><div class="kl">Units sold</div><div class="kv">${N(d.units_sold||0)}</div></div>
+      <div class="kc b"><div class="kl">Closing P.Rate → next OB</div><div class="kv">${R(d.closing_prate||0)}</div></div>
+      <div class="kc a"><div class="kl">Profit margin</div><div class="kv">${margin.toFixed(1)}%</div></div>
+    </div>
+    <div class="g2">
+      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px">
+        <div style="font-size:10px;font-weight:600;color:var(--t2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Grand totals from PDF</div>
+        ${[['OB Stock Purch',R(d.ob_stock_purch||0),'var(--blu)'],['OP Stock Sales',R(d.op_stock_sales||0),'var(--t0)'],['Purchase P.Rate (Purch col)',(d.purchase_prate||0)>0?R(d.purchase_prate||0):'₹0 (no Purch col)','var(--amb)'],['Sales P.Rate — COGS',R(d.sales_prate||0),'var(--red)'],['Sales S.Rate — Revenue',R(d.sales_srate||0),'var(--grn)'],['Net profit = S.Rate − P.Rate',R(profit),'var(--grn)'],['Closing P.Rate → next OB',R(d.closing_prate||0),'var(--blu)'],['Closing S.Rate → next OP',R(d.closing_srate||0),'var(--t0)']].map(([l,v,c])=>`<div class="dr"><span class="dl">${l}</span><span class="dv" style="color:${c}">${v}</span></div>`).join('')}
+        <div class="formula">Profit = Sales S.Rate − Sales P.Rate. Never full S.Rate.</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:12px">
+        <div style="font-size:10px;font-weight:600;color:var(--t2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Category profit</div>
+        ${Object.entries(cats).filter(([,v])=>v.u>0).sort((a,b)=>(b[1].ss-b[1].sp)-(a[1].ss-a[1].sp)).map(([cat,v])=>{const pr=v.ss-v.sp;const mg=v.ss>0?((pr/v.ss)*100).toFixed(1):0;return`<div class="dr"><span class="dl">${cat} <span style="color:var(--t2)">${v.u}</span></span><span class="dv g">${R(pr)} <span style="color:var(--t2)">${mg}%</span></span></div>`}).join('')||'<div class="notice">No item data loaded</div>'}
+      </div>
+    </div>`)
+}
+
+function mvFil(cat,el){_mvFil=cat;document.querySelectorAll('#mv-pills .pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');renderMv()}
+function mvSrch(v){_mvSrch=v;renderMv()}
+function renderMv() {
+  const idx=parseInt($('mvd')?.value); if(isNaN(idx)||idx<0||idx>=_reports.length){$('mv-body').innerHTML='<tr><td colspan="15" class="notice">Upload reports</td></tr>';return}
+  const d=_reports[idx], items=(_items[d.id]||[]).filter(it=>(_mvFil==='ALL'||it.category===_mvFil)&&(!_mvSrch||it.item_name.toLowerCase().includes(_mvSrch.toLowerCase())))
+  const cmap={}; items.forEach(it=>{if(!cmap[it.category])cmap[it.category]=[];cmap[it.category].push(it)})
+  let rows='',tS=0,tP=0,tO=0,tC=0,tCG=0,tRv=0,tPr=0,tCP=0,tCS=0
+  Object.entries(cmap).forEach(([cat,its])=>{
+    rows+=`<tr class="cat-hdr"><td colspan="15">${cat} (${its.length})</td></tr>`
+    its.forEach(it=>{
+      const cogs=it.day_cogs||0,rev=it.day_revenue||0,pr=it.day_profit||0,clP=it.closing_val_prate||0,clS=it.closing_val_srate||0
+      tS+=it.units_sold||0;tP+=it.purch_col||0;tO+=it.opening_stock||0;tC+=it.closing_stock||0;tCG+=cogs;tRv+=rev;tPr+=pr;tCP+=clP;tCS+=clS
+      rows+=`<tr><td><span class="badge bb">${it.category}</span></td><td style="font-weight:600">${it.item_name}</td>
+        <td class="n">${it.opening_stock||0}</td>
+        <td class="n">${(it.purch_col||0)>0?`<span style="color:var(--amb);font-weight:600">+${it.purch_col}</span>`:'—'}</td>
+        <td class="n">${(it.opening_stock||0)+(it.purch_col||0)}</td>
+        <td class="n" style="font-weight:600">${(it.units_sold||0)>0?it.units_sold:`<span style="color:var(--t2)">0</span>`}</td>
+        <td class="n">${it.closing_stock||0}</td>
+        <td class="n">₹${(it.purchase_rate||0).toFixed(2)}</td><td class="n">₹${(it.sale_rate||0).toFixed(2)}</td>
+        <td class="n" style="color:var(--grn)">₹${((it.sale_rate||0)-(it.purchase_rate||0)).toFixed(2)}</td>
+        <td class="n">${cogs>0?R(cogs):'—'}</td><td class="n">${rev>0?R(rev):'—'}</td>
+        <td class="n" style="font-weight:600;color:${pr>0?'var(--grn)':pr<0?'var(--red)':'var(--t2)'}">${pr>0?R(pr):pr===0?'—':'−'+R(-pr)}</td>
+        <td class="n">${clP>0?R(clP):'—'}</td><td class="n">${clS>0?R(clS):'—'}</td>
+      </tr>`
+    })
+  })
+  $('mv-body').innerHTML=rows||'<tr><td colspan="15" class="notice">No items match</td></tr>'
+  $('mv-foot').innerHTML=`<td colspan="2">${items.length} items</td><td class="n">${N(tO)}</td><td class="n">${tP>0?'+'+N(tP):'—'}</td><td class="n">${N(tO+tP)}</td><td class="n" style="font-weight:600">${N(tS)}</td><td class="n">${N(tC)}</td><td colspan="3"></td><td class="n">${R(tCG)}</td><td class="n">${R(tRv)}</td><td class="n" style="color:var(--grn);font-weight:600">${R(tPr)}</td><td class="n">${R(tCP)}</td><td class="n">${R(tCS)}</td>`
+}
+
+function renderPurDet() {
+  const el=$('pur-det-list'); if(!el)return
+  if(!_reports.length){el.innerHTML='<div class="notice">Upload stock reports to see purchase detection</div>';return}
+  let html=''
+  _reports.forEach((r,i)=>{
+    const dets=(_detections[r.id]||[]).filter(d=>d.detection_method==='purch_column')
+    html+=`<div style="margin-bottom:16px"><div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">${r.label}</div>`
+    if(dets.length){
+      dets.forEach(d=>{html+=`<div class="srow"><div><div class="sn">${d.item_name} <span class="badge bb">${d.category||''}</span></div><div class="sm">Purch col: +${d.purch_qty} · P.Rate: ₹${(d.purchase_rate||0).toFixed(2)} · Value: ${R(d.purchase_value||0)}</div></div><div style="text-align:right"><div class="sv">+${d.purch_qty}</div><div style="font-size:11px;color:${d.confirmed?'var(--grn)':'var(--amb)'};">${d.confirmed?'✓ Confirmed':'Pending'}</div>${!d.confirmed?`<button class="btn bg-btn" style="font-size:10px;padding:2px 8px;margin-top:3px" onclick="confirmSingleDet('${d.id}')">Confirm</button>`:''}</div></div>`})
+    } else html+=`<div class="warn-box" style="margin-bottom:0">No Purch column entries in ${r.label} — no purchases.</div>`
+    // Variance (prev closing vs curr opening)
+    if(i>0) {
+      const prev=_reports[i-1], prevItems=_items[prev.id]||[], currItems=_items[r.id]||[]
+      const variances=currItems.filter(it=>{const pi=prevItems.find(p=>p.item_name===it.item_name);return pi&&(it.opening_stock!==pi.closing_stock)&&(it.purch_col||0)===0}).map(it=>{const pi=prevItems.find(p=>p.item_name===it.item_name);return{name:it.item_name,cat:it.category,diff:(it.opening_stock||0)-(pi.closing_stock||0)}})
+      if(variances.length) html+=`<div style="margin-top:8px;font-size:10px;font-weight:600;color:var(--t2);margin-bottom:4px;text-transform:uppercase">Variance (manual review — NOT purchases)</div>`+variances.slice(0,8).map(v=>`<div class="dr" style="font-size:11px"><span class="dl">${v.name} (${v.cat})</span><span style="color:${v.diff>0?'var(--amb)':'var(--red)'};font-weight:500;font-style:italic">${v.diff>0?'+':''}${v.diff} units</span></div>`).join('')
+    }
+    html+='</div>'
+  })
+  el.innerHTML=html
+}
+
+async function confirmSingleDet(id) {
+  await sb.from('purchase_detections').update({confirmed:true,confirmed_at:new Date().toISOString()}).eq('id',id)
+  toast('Purchase confirmed — log UTR in Purchase tab')
+  await loadStockReports()
+  renderPurDet(); renderDash()
+}
+
+function trkSrch(v){_trkSrch=v;renderTrk()}
+function renderTrk() {
+  _trkCat=$('trk-cat')?.value||'ALL'
+  const body=$('trk-body'); if(!body)return
+  if(!_reports.length){body.innerHTML='<tr><td colspan="11" class="notice">Upload reports</td></tr>';return}
+  const nameSet=new Set(); _reports.forEach(r=>(_items[r.id]||[]).forEach(it=>nameSet.add(it.item_name)))
+  const latMap={}; (_items[_reports[_reports.length-1]?.id]||[]).forEach(it=>latMap[it.item_name]=it)
+  const names=[...nameSet].filter(n=>{const it=latMap[n]||(_items[_reports[0]?.id]||[]).find(x=>x.item_name===n);return it&&(_trkCat==='ALL'||it.category===_trkCat)&&(!_trkSrch||n.toLowerCase().includes(_trkSrch.toLowerCase()))}).sort()
+  if(!names.length){body.innerHTML='<tr><td colspan="11" class="notice">No items match</td></tr>';return}
+  body.innerHTML=names.map(n=>{
+    const it=latMap[n]||_reports.reduce((found,r)=>found||(_items[r.id]||[]).find(x=>x.item_name===n),null)
+    const tS=_reports.reduce((a,r)=>{const f=(_items[r.id]||[]).find(x=>x.item_name===n);return a+(f?f.units_sold||0:0)},0)
+    const tPur=_reports.reduce((a,r)=>{const f=(_items[r.id]||[]).find(x=>x.item_name===n);return a+(f?f.purch_col||0:0)},0)
+    const cur=latMap[n]?.closing_stock||0, stVal=cur*(it?.purchase_rate||0)
+    const tRev=tS*(it?.sale_rate||0),tPr=tS*((it?.sale_rate||0)-(it?.purchase_rate||0))
+    // Variance: latest opening vs prev closing
+    let variance=0; if(_reports.length>1){const ci=(_items[_reports[_reports.length-1].id]||[]).find(x=>x.item_name===n);const pi=(_items[_reports[_reports.length-2].id]||[]).find(x=>x.item_name===n);if(ci&&pi)variance=(ci.opening_stock||0)-(pi.closing_stock||0)}
+    return`<tr><td><span class="badge bb" style="font-size:9px">${it?.category||'—'}</span></td><td style="font-weight:600">${n}</td>
+      <td class="n" style="color:var(--grn);font-weight:600">${tS>0?tS:'—'}</td>
+      <td class="n">${tPur>0?`<span style="color:var(--grn);font-weight:600">+${tPur}</span>`:'—'}</td>
+      <td class="n">${variance!==0?`<span style="color:${variance>0?'var(--amb)':'var(--red)'};font-style:italic">${variance>0?'+':''}${variance}</span>`:'<span style="color:var(--t2)">OK</span>'}</td>
+      <td class="n" style="font-weight:600">${cur}</td>
+      <td class="n">${stVal>0?R(stVal):'—'}</td>
+      <td class="n">₹${(it?.purchase_rate||0).toFixed(2)}</td>
+      <td class="n">₹${(it?.sale_rate||0).toFixed(2)}</td>
+      <td class="n">${tRev>0?R(tRev):'—'}</td>
+      <td class="n" style="color:var(--grn);font-weight:600">${tPr>0?R(tPr):'—'}</td>
+    </tr>`
+  }).join('')||'<tr><td colspan="11" class="notice">No items</td></tr>'
+}
+
+function anlRange(r,el){_anlRange=r;document.querySelectorAll('#stp-anl .pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');renderAnl()}
+function renderAnl() {
+  const rpts=_anlRange==='last'&&_reports.length?[_reports[_reports.length-1]]:_reports
+  if(!rpts.length){['anl-top','anl-low','anl-profit','anl-cat'].forEach(id=>set(id,'<div class="notice">Upload reports</div>'));return}
+  const imap={}
+  rpts.forEach(r=>(_items[r.id]||[]).forEach(it=>{if(!imap[it.item_name])imap[it.item_name]={sale:0,rev:0,profit:0,cat:it.category};imap[it.item_name].sale+=it.units_sold||0;imap[it.item_name].rev+=it.day_revenue||0;imap[it.item_name].profit+=it.day_profit||0}))
+  const ent=Object.entries(imap).filter(([,v])=>v.sale>0)
+  const byVol=[...ent].sort((a,b)=>b[1].sale-a[1].sale)
+  const byPr=[...ent].sort((a,b)=>b[1].profit-a[1].profit)
+  const mxV=byVol[0]?.[1].sale||1, mxP=byPr[0]?.[1].profit||1
+  set('anl-top',byVol.slice(0,10).map(([n,v],i)=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span style="color:var(--t1)">${i+1}. ${n}</span><span style="font-weight:600">${N(v.sale)} units</span></div><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(v.sale/mxV*100)}%;background:var(--grn)"></div></div></div>`).join(''))
+  set('anl-low',byVol.slice(-Math.min(10,byVol.length)).reverse().map(([n,v])=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--bd)"><span style="color:var(--t1)">${n} <span class="badge br-b" style="font-size:8px">${v.cat}</span></span><span style="color:var(--red)">${N(v.sale)}</span></div>`).join(''))
+  set('anl-profit',byPr.slice(0,10).map(([n,v],i)=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span style="color:var(--t1)">${i+1}. ${n}</span><span style="font-weight:600;color:var(--amb)">${R(v.profit)}</span></div><div class="bar-bg"><div class="bar-fill" style="width:${Math.round(v.profit/mxP*100)}%;background:var(--amb)"></div></div></div>`).join(''))
+  const catM={}; ent.forEach(([,v])=>{if(!catM[v.cat])catM[v.cat]={sale:0,rev:0,profit:0};catM[v.cat].sale+=v.sale;catM[v.cat].rev+=v.rev;catM[v.cat].profit+=v.profit})
+  set('anl-cat',Object.entries(catM).sort((a,b)=>b[1].profit-a[1].profit).map(([cat,v])=>{const mg=v.rev>0?((v.profit/v.rev)*100).toFixed(1):0;return`<div class="dr" style="font-size:11px"><span class="dl">${cat} (${N(v.sale)})</span><span class="dv g">${R(v.profit)} <span style="color:var(--t2)">${mg}%</span></span></div>`}).join(''))
+}
+
+// ══════════════════════════════════════════════════
+// REPORTS PAGE
+// ══════════════════════════════════════════════════
+function buildReport() {
+  const tp=$('rpt-type')?.value||'pnl', out=$('rpt-out'); if(!out)return
+  const totRev=_reports.reduce((a,r)=>a+(r.sales_srate||0),0)
+  const totCOGS=_reports.reduce((a,r)=>a+(r.sales_prate||0),0)
+  const totProfit=totRev-totCOGS
+  const totRTGS=_purchases.filter(p=>p.purchase_type==='tasmac_rtgs').reduce((a,p)=>a+p.amount,0)
+  const totExp=_expenses.reduce((a,e)=>a+e.amount,0)
+  const totSales=_sales.reduce((a,s)=>a+(s.gross_sales||0),0)
+  if(tp==='pnl'){
+    out.innerHTML=`<div class="card"><div class="ch"><h3>P&L summary</h3></div>
+    <div class="krow">${[{l:'Total profit',v:R(totProfit),c:'var(--grn)'},{l:'Revenue',v:R(totRev),c:'var(--t0)'},{l:'COGS',v:R(totCOGS),c:'var(--red)'},{l:'RTGS sent',v:R(totRTGS),c:'var(--amb)'},{l:'Expenses',v:R(totExp),c:'var(--amb)'},{l:'Net after all',v:R(totProfit-totRTGS-totExp),c:'var(--grn)'}].map(({l,v,c})=>`<div class="kc"><div class="kl">${l}</div><div class="kv" style="color:${c}">${v}</div></div>`).join('')}</div>
+    ${_reports.length?_reports.map(r=>`<div class="dr"><span class="dl">${r.label}: ${R(r.sales_srate||0)} − ${R(r.sales_prate||0)}</span><span class="dv g">= ${R(r.net_profit||0)}</span></div>`).join('')+'<div class="dr tot"><span class="dl">Total profit</span><span class="dv g" style="font-size:18px">'+R(totProfit)+'</span></div>':'<div class="notice">No stock reports uploaded yet</div>'}</div>`
+  } else if(tp==='sales'){
+    const keys=['liquor','express','food','snacks_token','ac_charges','cooldrink','cigarette','empty_bottle','other_sales']
+    const LBL={liquor:'Liquor',express:'Express',food:'Food',snacks_token:'Snacks token',ac_charges:'AC charges',cooldrink:'Cooldrinks',cigarette:'Cigarettes',empty_bottle:'Empty bottles',other_sales:'Other'}
+    const tots={}; keys.forEach(k=>tots[k]=_sales.reduce((a,s)=>a+(s[k]||0),0))
+    out.innerHTML=`<div class="card"><div class="ch"><h3>Sales by category</h3></div>${_sales.length?Object.entries(tots).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="dr"><span class="dl">${LBL[k]}</span><span class="dv g">${R(v)}</span></div>`).join('')+'<div class="dr tot"><span class="dl">Grand total</span><span class="dv g">'+R(totSales)+'</span></div>':'<div class="notice">No sales entries yet</div>'}</div>`
+  } else if(tp==='purchase'){
+    out.innerHTML=`<div class="card"><div class="ch"><h3>Purchase & RTGS report</h3></div>${_purchases.length?_purchases.map(p=>`<div class="dr"><div><span style="font-weight:500">${p.description||p.purchase_type}</span><div style="font-size:10px;color:var(--t2)">${p.purchase_date} · ${modeLabel(p.payment_mode)}${p.utr_reference?' · UTR: '+p.utr_reference:''}</div></div><span class="dv a">-${R(p.amount)}</span></div>`).join('')+'<div class="dr tot"><span class="dl">Total</span><span class="dv a">'+R(_purchases.reduce((a,p)=>a+p.amount,0))+'</span></div>':'<div class="notice">No purchases recorded</div>'}</div>`
+  } else if(tp==='expense'){
+    out.innerHTML=`<div class="card"><div class="ch"><h3>Expense report</h3></div>${_expenses.length?_expenses.map(e=>`<div class="dr"><div><span style="font-weight:500">${e.category_name}${e.sub_category?' / '+e.sub_category:''}</span><div style="font-size:10px;color:var(--t2)">${e.expense_date} · ${modeLabel(e.payment_mode)}</div></div><span class="dv r">-${R(e.amount)}</span></div>`).join('')+'<div class="dr tot"><span class="dl">Total</span><span class="dv r">'+R(totExp)+'</span></div>':'<div class="notice">No expenses recorded</div>'}</div>`
+  } else {
+    out.innerHTML=`<div class="card"><div class="ch"><h3>Business overview</h3></div>${[['Stock reports',_reports.length+' reports'],['Total revenue',R(totRev)],['Gross profit',R(totProfit)],['RTGS sent',R(totRTGS)],['Expenses',R(totExp)],['Net profit after all',R(totProfit-totRTGS-totExp)],['Sales entries',_sales.length+' entries'],['Total bank bal',R(getBankBal(1)+getBankBal(2))],['Cash in hand',R(getCashBal())]].map(([l,v])=>`<div class="dr"><span class="dl">${l}</span><span style="font-weight:600">${v}</span></div>`).join('')}</div>`
+  }
+}
+
+// ══════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+    if ($('tab-login').style.display !== 'none') doLogin()
+  }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-ov.show').forEach(m => m.classList.remove('show'))
+  }
+})
+</script>
+</body>
+</html>
