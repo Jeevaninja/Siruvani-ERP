@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siruvani Bar & Kitchen — ERP</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#0d0f18;--bg1:#151823;--bg2:#1e2235;--bg3:#272c42;
+  --bd:#2a2f47;--bd2:#363d5c;
+  --t0:#eceef5;--t1:#8d96b8;--t2:#4a5275;
+  --grn:#22c55e;--gbd:#091a10;--gdm:#15803d;
+  --blu:#60a5fa;--bbd:#0a1628;--bdm:#1d4ed8;
+  --amb:#f59e0b;--abd:#1a1000;
+  --red:#f87171;--rbd:#1a0808;
+  --pur:#a78bfa;--pbd:#120a28;
+  --r:10px;--rs:7px
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg0);color:var(--t0);font-size:13px;min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg1)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.fadein{animation:fadeIn .2s ease}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#1a1f3a 0%,var(--bg0) 70%)}
+.auth-card{width:400px;background:var(--bg1);border:1px solid var(--bd);border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.auth-logo{padding:28px 28px 18px;text-align:center}
+.auth-logo h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--t0),var(--blu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-logo p{font-size:11px;color:var(--t2);margin-top:3px}
+.auth-notice{margin:0 28px 16px;padding:9px 12px;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:500;background:var(--abd);color:var(--amb);border:1px solid #3a2500;border-radius:7px}
+.auth-tabs{display:flex;border-bottom:1px solid var(--bd);margin:0 28px}
+.atab{padding:9px 14px;font-size:12px;cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;color:var(--t2);transition:color .15s}
+.atab.on{color:var(--t0);font-weight:600;border-bottom-color:var(--blu)}
+.auth-panel{padding:20px 28px}
+.aff{margin-bottom:13px}
+.aff label{display:block;font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px}
+.aff input{width:100%;padding:10px 13px;font-size:13px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit;transition:border-color .15s}
+.aff input:focus{border-color:var(--blu)}
+.auth-err{display:none;background:var(--rbd);color:var(--red);border:1px solid #3a1515;padding:8px 12px;border-radius:var(--rs);font-size:12px;margin-bottom:12px}
+.auth-ok{display:none;background:var(--gbd);color:var(--grn);border:1px solid var(--gdm);padding:8px 12px;border-radius:var(--rs);font-size:12px;margin-bottom:12px}
+.auth-btn{width:100%;padding:11px;font-size:13px;font-weight:700;background:var(--blu);color:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-family:inherit;transition:opacity .15s}
+.auth-btn:hover{opacity:.88}.auth-btn:disabled{opacity:.4;cursor:not-allowed}
+.auth-foot{padding:13px 28px;border-top:1px solid var(--bd);font-size:11px;color:var(--t2);text-align:center}
+
+/* APP SHELL */
+.app{display:flex;height:100vh;overflow:hidden}
+.sb{width:220px;background:var(--bg1);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-brand{padding:16px 16px 12px;border-bottom:1px solid var(--bd)}
+.sb-name{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.sb-sub{font-size:10px;color:var(--t2);margin-top:1px}
+.sb-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--grn);margin-right:5px;box-shadow:0 0 6px var(--grn)}
+.sb-sec{font-size:9px;font-weight:700;color:var(--t2);letter-spacing:1px;padding:12px 14px 3px;text-transform:uppercase}
+.si{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:12px;color:var(--t1);cursor:pointer;border-radius:var(--rs);margin:1px 7px;transition:all .12s;user-select:none}
+.si:hover{background:var(--bg2);color:var(--t0)}
+.si.on{background:var(--bg3);color:var(--t0);font-weight:600}
+.si svg{width:14px;height:14px;flex-shrink:0;opacity:.7}.si.on svg{opacity:1}
+.sb-bot{margin-top:auto;padding:12px 14px;border-top:1px solid var(--bd)}
+.sb-user{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.sb-av{width:30px;height:30px;border-radius:50%;background:var(--bbd);border:1px solid var(--blu);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--blu);flex-shrink:0}
+.sb-out{font-size:11px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit}
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:48px;background:var(--bg1);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0}
+.tbt{font-size:14px;font-weight:700;flex:1}
+.tbd{font-size:11px;color:var(--t2)}
+.pages{flex:1;overflow-y:auto}
+.page{display:none;padding:20px}.page.on{display:block;animation:fadeIn .2s ease}
+
+/* RANGE PICKER */
+.rp-wrap{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.rp-btn{padding:5px 11px;font-size:11px;font-weight:500;border:1px solid var(--bd2);border-radius:6px;cursor:pointer;background:var(--bg2);color:var(--t1);font-family:inherit;white-space:nowrap;transition:all .12s}
+.rp-btn:hover{background:var(--bg3);color:var(--t0)}
+.rp-btn.on{background:var(--blu);color:#fff;border-color:var(--blu)}
+.rp-custom{display:flex;gap:6px;align-items:center;margin-top:4px}
+.rp-custom input{font-size:11px;padding:5px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--bg1);color:var(--t0);outline:none;font-family:inherit}
+.rp-apply{padding:5px 12px;font-size:11px;font-weight:600;background:var(--blu);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit}
+
+/* CARDS */
+.card{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:8px;flex-wrap:wrap}
+.ch h3{font-size:13px;font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* KPIs */
+.krow{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.kc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:14px 15px}
+.kl{font-size:10px;font-weight:600;color:var(--t2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.kv{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.ks{font-size:10px;color:var(--t2);margin-top:3px}
+.kc.g .kv{color:var(--grn)}.kc.r .kv{color:var(--red)}.kc.b .kv{color:var(--blu)}.kc.a .kv{color:var(--amb)}.kc.p .kv{color:var(--pur)}
+
+/* DATA ROWS */
+.dr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px}
+.dr:last-child{border:none}
+.dl{color:var(--t1)}.dv{font-weight:500}
+.dv.g{color:var(--grn)}.dv.r{color:var(--red)}.dv.b{color:var(--blu)}.dv.a{color:var(--amb)}.dv.p{color:var(--pur)}
+.dr.tot{border-top:2px solid var(--bd2);margin-top:4px;padding-top:9px}
+.dr.tot .dl{font-weight:700;color:var(--t0)}.dr.tot .dv{font-size:15px}
+
+/* FORMS */
+.ff{display:flex;flex-direction:column;gap:3px}
+.ff label{font-size:10px;font-weight:600;color:var(--t2)}
+.ff input,.ff select,.ff textarea{font-size:12px;padding:8px 10px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;width:100%;font-family:inherit;transition:border-color .15s}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--blu)}
+.ff textarea{height:58px;resize:vertical}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+
+/* BUTTONS */
+.btn{padding:7px 14px;font-size:12px;font-weight:600;border-radius:var(--rs);cursor:pointer;border:none;font-family:inherit;transition:opacity .12s}
+.btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
+.bf{background:var(--blu);color:#fff}
+.bg{background:var(--grn);color:#000}
+.bo{background:transparent;color:var(--t1);border:1px solid var(--bd2)}.bo:hover{background:var(--bg3);color:var(--t0)}
+.br{background:var(--rbd);color:var(--red);border:1px solid #3a1515}
+.ba{background:var(--abd);color:var(--amb);border:1px solid #3a2500}
+
+/* BADGES */
+.badge{display:inline-flex;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px}
+.bb{background:var(--bbd);color:var(--blu)}.bg-b{background:var(--gbd);color:var(--grn)}.ba-b{background:var(--abd);color:var(--amb)}.br-b{background:var(--rbd);color:var(--red)}.bp-b{background:var(--pbd);color:var(--pur)}
+
+/* MISC */
+.notice{padding:20px;text-align:center;font-size:12px;color:var(--t2)}
+.info-box{background:var(--bbd);border:1px solid #1a3050;border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--blu);margin-bottom:10px}
+.warn-box{background:var(--abd);border:1px solid #3a2500;border-radius:var(--rs);padding:8px 12px;font-size:11px;color:var(--amb);margin-bottom:10px}
+.divider{height:1px;background:var(--bd);margin:10px 0}
+.slbl{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.6px;text-transform:uppercase;padding:8px 0 4px;margin-top:4px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{text-align:left;padding:7px 8px;font-size:10px;font-weight:700;color:var(--t2);border-bottom:1px solid var(--bd2);background:var(--bg2);white-space:nowrap}
+.tbl td{padding:8px 8px;border-bottom:1px solid var(--bd);color:var(--t0)}
+.tbl tr:hover td{background:var(--bg2)}
+.tbl td.n,.tbl th.n{text-align:right}
+.tbl tfoot td{font-weight:700;background:var(--bg3);border-top:2px solid var(--bd2)}
+
+/* STEP NAV */
+.steps{display:flex;gap:0;margin-bottom:16px;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.step{flex:1;padding:10px 12px;text-align:center;font-size:11px;font-weight:500;cursor:pointer;color:var(--t2);background:var(--bg2);border-right:1px solid var(--bd);transition:all .15s}
+.step:last-child{border-right:none}
+.step.on{background:var(--bg3);color:var(--t0);font-weight:700}
+.step.done{color:var(--grn)}
+.step-num{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--bd2);color:var(--t1);font-size:10px;font-weight:700;line-height:18px;text-align:center;margin-right:5px}
+.step.on .step-num{background:var(--blu);color:#fff}
+.step.done .step-num{background:var(--grn);color:#000}
+
+/* EXPENSE ROW */
+.exp-row{display:grid;grid-template-columns:130px 1fr 90px 110px 90px 32px;gap:6px;margin-bottom:6px;align-items:center}
+.exp-row input,.exp-row select{font-size:11px;padding:6px 8px;border:1px solid var(--bd2);border-radius:6px;background:var(--bg2);color:var(--t0);outline:none;font-family:inherit;width:100%}
+.exp-row input:focus,.exp-row select:focus{border-color:var(--blu)}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-ov.show{display:flex}
+.modal-box{background:var(--bg1);border:1px solid var(--bd2);border-radius:var(--r);padding:24px;width:90%;max-width:560px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:5px}
+.modal-sub{font-size:11px;color:var(--t2);margin-bottom:16px}
+
+/* PRINT */
+@media print{
+  .sb,.topbar,.no-print{display:none!important}
+  .page{display:block!important;padding:0}
+  body{background:#fff;color:#000}
+  .print-section{page-break-after:always;padding:20px 0}
+  .card{border:1px solid #ddd;background:#fff}
+}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 16px;font-size:12px;font-weight:500;z-index:2000;opacity:0;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;max-width:360px}
+
+/* CONFIRM DIALOG */
+.confirm-box{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1100;display:none;align-items:center;justify-content:center}
+.confirm-box.show{display:flex}
+.confirm-inner{background:var(--bg1);border:1px solid var(--bd2);border-radius:var(--r);padding:24px;width:340px;text-align:center}
+.confirm-inner h4{font-size:15px;font-weight:700;margin-bottom:8px}
+.confirm-inner p{font-size:12px;color:var(--t1);margin-bottom:18px}
+.confirm-btns{display:flex;gap:8px;justify-content:center}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-box" id="confirm-box">
+  <div class="confirm-inner">
+    <h4 id="confirm-title">Are you sure?</h4>
+    <p id="confirm-msg">This cannot be undone.</p>
+    <div class="confirm-btns">
+      <button class="btn bo" onclick="confirmCancel()">Cancel</button>
+      <button class="btn br" id="confirm-ok-btn" onclick="confirmOk()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="auth-wrap" id="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <h1>Siruvani Bar & Kitchen</h1>
+      <p>Management ERP · Tirupur</p>
+    </div>
+    <div class="auth-notice">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="10" height="8" rx="1"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+      Private system — authorised access only
+    </div>
+    <div class="auth-tabs">
+      <button class="atab on" onclick="aTab('login',this)">Sign in</button>
+      <button class="atab" onclick="aTab('signup',this)">Sign up</button>
+      <button class="atab" onclick="aTab('reset',this)">Forgot password</button>
+    </div>
+    <div class="auth-panel" id="ap-login">
+      <div class="auth-err" id="login-err"></div>
+      <div class="aff"><label>Email</label><input type="email" id="l-email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="aff" style="margin-bottom:18px"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+    </div>
+    <div class="auth-panel" id="ap-signup" style="display:none">
+      <div class="auth-err" id="signup-err"></div>
+      <div class="auth-ok" id="signup-ok"></div>
+      <div class="aff"><label>Full name</label><input type="text" id="s-name" placeholder="Your name"></div>
+      <div class="aff"><label>Email</label><input type="email" id="s-email" placeholder="you@email.com"></div>
+      <div class="aff"><label>Password (min 8 chars)</label><input type="password" id="s-pass" placeholder="••••••••"></div>
+      <div class="aff" style="margin-bottom:18px"><label>Confirm password</label><input type="password" id="s-pass2" placeholder="••••••••"></div>
+      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create account</button>
+    </div>
+    <div class="auth-panel" id="ap-reset" style="display:none">
+      <div class="auth-err" id="reset-err"></div>
+      <div class="auth-ok" id="reset-ok"></div>
+      <p style="font-size:12px;color:var(--t2);margin-bottom:14px">Enter your email and we'll send a password reset link.</p>
+      <div class="aff" style="margin-bottom:18px"><label>Email</label><input type="email" id="r-email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')doReset()"></div>
+      <button class="auth-btn" id="reset-btn" onclick="doReset()">Send reset link</button>
+    </div>
+    <div class="auth-foot">🔒 Data secured by Supabase — Siruvani Bar ERP</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="display:none">
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-brand">
+      <div class="sb-name"><span class="sb-dot"></span>Siruvani Bar</div>
+      <div class="sb-sub">& Kitchen ERP · Tirupur</div>
+    </div>
+    <div class="sb-sec">Main</div>
+    <div class="si on" onclick="go('dash',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Dashboard
+    </div>
+    <div class="si" onclick="go('entry',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M3 7h10"/></svg>Daily Entry
+    </div>
+    <div class="sb-sec">Records</div>
+    <div class="si" onclick="go('sales',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10l-1 9H4z"/><path d="M6 3V2a2 2 0 014 0v1"/></svg>Sales
+    </div>
+    <div class="si" onclick="go('expenses',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>Expenses
+    </div>
+    <div class="si" onclick="go('purchases',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M3 7l5-5 5 5"/></svg>Purchases
+    </div>
+    <div class="sb-sec">Reports</div>
+    <div class="si" onclick="go('pnl',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13V6M7 13V3M11 13V9"/></svg>P&L Report
+    </div>
+    <div class="si" onclick="go('view',this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="3"/><path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z"/></svg>Data View
+    </div>
+    <div class="sb-bot">
+      <div class="sb-user">
+        <div class="sb-av" id="sb-av">AD</div>
+        <div><div style="font-size:12px;font-weight:600" id="sb-name">Admin</div><div style="font-size:10px;color:var(--t2)">Owner</div></div>
+      </div>
+      <button class="sb-out" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="topbar">
+      <div class="tbt" id="tbt">Dashboard</div>
+      <div class="tbd" id="tbd"></div>
+    </div>
+    <div class="pages">
+
+<!-- ═══════════════════════════════════════════════
+     DASHBOARD
+═══════════════════════════════════════════════ -->
+<div class="page on" id="pg-dash">
+  <div class="no-print">
+    <div class="card" style="margin-bottom:12px">
+      <div class="ch" style="margin-bottom:8px"><h3>Date range</h3></div>
+      <div class="rp-wrap" id="dash-rp"></div>
+      <div class="rp-custom" id="dash-custom" style="display:none">
+        <input type="date" id="dash-cf"><span style="color:var(--t2)">to</span><input type="date" id="dash-ct">
+        <button class="rp-apply" onclick="applyCustom('dash')">Apply</button>
+      </div>
+    </div>
+  </div>
+  <div class="krow" id="dash-krow"></div>
+  <div class="g2">
+    <div>
+      <div class="card"><div class="ch"><h3>Sales breakdown</h3></div><div id="dash-sales-breakdown"></div></div>
+      <div class="card"><div class="ch"><h3>Purchase accounts</h3></div><div id="dash-purchases"></div></div>
+    </div>
+    <div>
+      <div class="card"><div class="ch"><h3>P&L summary</h3></div><div id="dash-pnl"></div></div>
+      <div class="card"><div class="ch"><h3>Expenses by category</h3></div><div id="dash-exp-cat"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     DAILY ENTRY (Step Flow)
+═══════════════════════════════════════════════ -->
+<div class="page" id="pg-entry">
+  <div class="card no-print" style="margin-bottom:14px">
+    <div class="ch" style="margin-bottom:8px"><h3>Select date</h3></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <input type="date" id="entry-date" style="font-size:13px;padding:8px 12px;border:1px solid var(--bd2);border-radius:var(--rs);background:var(--bg2);color:var(--t0);outline:none;font-family:inherit" onchange="onEntryDateChange()">
+      <span id="entry-date-lbl" style="font-size:12px;color:var(--t2)">Select a date to start entry</span>
+    </div>
+  </div>
+  <div class="steps no-print">
+    <div class="step on" id="step-tab-1" onclick="gotoStep(1)"><span class="step-num">1</span>Sales</div>
+    <div class="step" id="step-tab-2" onclick="gotoStep(2)"><span class="step-num">2</span>Expenses</div>
+    <div class="step" id="step-tab-3" onclick="gotoStep(3)"><span class="step-num">3</span>Purchases</div>
+    <div class="step" id="step-tab-4" onclick="gotoStep(4)"><span class="step-num">4</span>Stock</div>
+  </div>
+
+  <!-- STEP 1: SALES -->
+  <div id="entry-step-1">
+    <div class="card">
+      <div class="ch">
+        <h3>Sales entry</h3>
+        <div style="display:flex;gap:8px">
+          <label style="font-size:11px;cursor:pointer;padding:5px 10px;background:var(--bg3);border:1px solid var(--bd2);border-radius:var(--rs);color:var(--t1)">
+            📎 Upload report
+            <input type="file" id="sales-file-upload" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileUpload('sales',this)">
+          </label>
+        </div>
+      </div>
+      <div id="sales-file-preview" style="display:none;margin-bottom:10px"></div>
+      <div class="slbl">Liquor</div>
+      <div class="fg3">
+        <div class="ff"><label>Liquor Sales (₹)</label><input type="number" id="es-liquor" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>Express / Local Liquor (₹)</label><input type="number" id="es-express" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>Token Sales (₹)</label><input type="number" id="es-token" placeholder="0" oninput="calcEntryTotals()"></div>
+      </div>
+      <div class="slbl">Food & Beverages</div>
+      <div class="fg3">
+        <div class="ff"><label>Food Sales (₹)</label><input type="number" id="es-food" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>AC Charges (₹)</label><input type="number" id="es-ac" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>Other Sales (₹)</label><input type="number" id="es-other" placeholder="0" oninput="calcEntryTotals()"></div>
+      </div>
+      <div class="slbl">Other items</div>
+      <div class="fg3">
+        <div class="ff"><label>Cooldrink Sales (₹)</label><input type="number" id="es-cooldrink" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>Cigarette Sales (₹)</label><input type="number" id="es-cigarette" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"></div>
+      </div>
+      <div class="slbl">Payment collection</div>
+      <div class="fg3">
+        <div class="ff"><label>Cash (₹)</label><input type="number" id="es-cash" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>Paytm 1 → Hotel Siruvani (₹)</label><input type="number" id="es-p1" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>Paytm 2 → SW Club (₹)</label><input type="number" id="es-p2" placeholder="0" oninput="calcEntryTotals()"></div>
+      </div>
+      <div class="fg2">
+        <div class="ff"><label>Pending / Credit (₹)</label><input type="number" id="es-pend" placeholder="0" oninput="calcEntryTotals()"></div>
+        <div class="ff"><label>Notes</label><input type="text" id="es-notes" placeholder="Any remarks..."></div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 13px;margin-bottom:12px">
+        <div class="dr"><span class="dl">Gross Sales</span><span class="dv g" id="el-gross">₹0</span></div>
+        <div class="dr"><span class="dl">Total collected</span><span class="dv" id="el-coll">₹0</span></div>
+        <div class="dr"><span class="dl">Cash · P1 · P2</span><span class="dv b" id="el-split">₹0 · ₹0 · ₹0</span></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bf" id="entry-save-sales-btn" onclick="saveEntryStep1()" style="flex:1">Save sales & continue →</button>
+        <button class="btn bo" onclick="gotoStep(2)">Skip →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: EXPENSES -->
+  <div id="entry-step-2" style="display:none">
+    <div class="card">
+      <div class="ch">
+        <h3>Expenses</h3>
+        <button class="btn bo" onclick="addEntryExpRow()" style="padding:5px 10px;font-size:11px">+ Add row</button>
+      </div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">Select from dropdowns · Type to add new category or sub-category on the fly</div>
+      <div id="entry-exp-rows"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">
+        <div style="font-size:12px;color:var(--t2)">Total: <span id="entry-exp-total" style="color:var(--amb);font-weight:600">₹0</span></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bo" onclick="gotoStep(1)">← Back</button>
+          <button class="btn bf" id="entry-save-exp-btn" onclick="saveEntryStep2()" style="padding:7px 16px">Save & continue →</button>
+          <button class="btn bo" onclick="gotoStep(3)">Skip →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: PURCHASES -->
+  <div id="entry-step-3" style="display:none">
+    <div class="g2">
+      <!-- TASMAC LIQUOR -->
+      <div class="card">
+        <div class="ch"><h3>🏪 TASMAC Liquor</h3><span class="badge bb">RTGS/Bank</span></div>
+        <div class="fg2">
+          <div class="ff"><label>Amount (₹)</label><input type="number" id="ep-liq-amt" placeholder="0"></div>
+          <div class="ff"><label>Payment</label>
+            <select id="ep-liq-mode"><option value="bank1">Hotel Siruvani (Bank 1)</option><option value="bank2">SW Club (Bank 2)</option><option value="dd">DD/Cheque</option></select>
+          </div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>UTR / Ref no.</label><input type="text" id="ep-liq-utr" placeholder="UTR number"></div>
+          <div class="ff"><label>Notes</label><input type="text" id="ep-liq-notes" placeholder="Invoice no..."></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px">
+          <label style="font-size:11px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--bd2);border-radius:var(--rs);color:var(--t1)">
+            📎 Upload payment screenshot
+            <input type="file" id="pur-liq-file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleFileUpload('pur-liq',this)">
+          </label>
+          <span id="pur-liq-file-name" style="font-size:10px;color:var(--grn)"></span>
+        </div>
+        <button class="btn bf" id="ep-save-liq-btn" onclick="saveEntryPur('liq')" style="width:100%">Save liquor purchase</button>
+      </div>
+
+      <!-- COOLDRINK -->
+      <div class="card">
+        <div class="ch"><h3>🥤 Cooldrink</h3></div>
+        <div class="fg2">
+          <div class="ff"><label>Amount (₹)</label><input type="number" id="ep-cool-amt" placeholder="0"></div>
+          <div class="ff"><label>Payment</label>
+            <select id="ep-cool-mode"><option value="cash">Cash</option><option value="bank1">Hotel Siruvani</option><option value="bank2">SW Club</option><option value="upi">UPI</option></select>
+          </div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Supplier</label><input type="text" id="ep-cool-notes" placeholder="Supplier name..."></div>
+          <div class="ff"><label>Ref/Invoice</label><input type="text" id="ep-cool-ref" placeholder="Invoice no..."></div>
+        </div>
+        <button class="btn bf" id="ep-save-cool-btn" onclick="saveEntryPur('cool')" style="width:100%">Save cooldrink purchase</button>
+      </div>
+
+      <!-- CIGARETTE -->
+      <div class="card">
+        <div class="ch"><h3>🚬 Cigarette</h3></div>
+        <div class="fg2">
+          <div class="ff"><label>Amount (₹)</label><input type="number" id="ep-cig-amt" placeholder="0"></div>
+          <div class="ff"><label>Payment</label>
+            <select id="ep-cig-mode"><option value="cash">Cash</option><option value="bank1">Hotel Siruvani</option><option value="bank2">SW Club</option><option value="upi">UPI</option></select>
+          </div>
+        </div>
+        <div class="fg2">
+          <div class="ff"><label>Supplier</label><input type="text" id="ep-cig-notes" placeholder="Supplier name..."></div>
+          <div class="ff"><label>Ref/Invoice</label><input type="text" id="ep-cig-ref" placeholder="Invoice no..."></div>
+        </div>
+        <button class="btn bf" id="ep-save-cig-btn" onclick="saveEntryPur('cig')" style="width:100%">Save cigarette purchase</button>
+      </div>
+
+      <div style="display:flex;gap:8px;grid-column:1/-1;justify-content:space-between;align-items:center">
+        <button class="btn bo" onclick="gotoStep(2)">← Back</button>
+        <button class="btn bf" onclick="gotoStep(4)" style="padding:7px 20px">Continue to stock →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: STOCK -->
+  <div id="entry-step-4" style="display:none">
+    <div class="card">
+      <div class="ch"><h3>Opening & closing stock</h3></div>
+      <div class="info-box">Closing stock of today automatically becomes tomorrow's opening stock.</div>
+      <div class="fg2">
+        <div class="ff"><label>Opening stock value (₹)</label><input type="number" id="es-op-stock" placeholder="Auto from previous day"></div>
+        <div class="ff"><label>Closing stock value (₹)</label><input type="number" id="es-cl-stock" placeholder="Enter today's physical count"></div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 13px;margin-bottom:12px">
+        <div class="dr"><span class="dl">Opening stock</span><span class="dv b" id="stock-op-lv">₹0</span></div>
+        <div class="dr"><span class="dl">+ Purchases today</span><span class="dv" id="stock-pur-lv">₹0</span></div>
+        <div class="dr"><span class="dl">- Closing stock</span><span class="dv" id="stock-cl-lv">₹0</span></div>
+        <div class="dr tot"><span class="dl">Stock consumed (COGS est.)</span><span class="dv a" id="stock-cogs-lv">₹0</span></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bo" onclick="gotoStep(3)">← Back</button>
+        <button class="btn bg" id="entry-save-stock-btn" onclick="saveEntryStep4()" style="flex:1">Save stock & finish ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SALES RECORDS
+═══════════════════════════════════════════════ -->
+<div class="page" id="pg-sales">
+  <div class="card no-print">
+    <div class="ch"><h3>Filter</h3></div>
+    <div class="rp-wrap" id="sales-rp"></div>
+    <div class="rp-custom" id="sales-custom" style="display:none">
+      <input type="date" id="sales-cf"><span style="color:var(--t2)">to</span><input type="date" id="sales-ct">
+      <button class="rp-apply" onclick="applyCustom('sales')">Apply</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><h3>Sales records</h3><small id="sales-ct" style="color:var(--t2)">0 entries</small></div>
+    <div class="tw"><table class="tbl" id="sales-tbl">
+      <thead><tr><th>Date</th><th>Shift</th><th class="n">Liquor</th><th class="n">Express</th><th class="n">Token</th><th class="n">Food</th><th class="n">AC</th><th class="n">Other</th><th class="n">Gross</th><th class="n">Cash</th><th class="n">P1</th><th class="n">P2</th><th>Actions</th></tr></thead>
+      <tbody id="sales-tbody"><tr><td colspan="13" class="notice">No sales records</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     EXPENSES RECORDS
+═══════════════════════════════════════════════ -->
+<div class="page" id="pg-expenses">
+  <div class="g2">
+    <div>
+      <div class="card no-print">
+        <div class="ch"><h3>Filter</h3></div>
+        <div class="rp-wrap" id="exp-rp"></div>
+        <div class="rp-custom" id="exp-custom" style="display:none">
+          <input type="date" id="exp-cf"><span style="color:var(--t2)">to</span><input type="date" id="exp-ct">
+          <button class="rp-apply" onclick="applyCustom('exp')">Apply</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>Expense records</h3><small id="exp-ct" style="color:var(--t2)">0 entries</small></div>
+        <div id="exp-list"><div class="notice">No expenses</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ch"><h3>By category (pie)</h3></div>
+        <div style="position:relative;height:250px"><canvas id="exp-pie-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>By category (bar)</h3></div>
+        <div style="position:relative;height:220px"><canvas id="exp-bar-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PURCHASES RECORDS
+═══════════════════════════════════════════════ -->
+<div class="page" id="pg-purchases">
+  <div class="card no-print">
+    <div class="ch"><h3>Filter</h3></div>
+    <div class="rp-wrap" id="pur-rp"></div>
+    <div class="rp-custom" id="pur-custom" style="display:none">
+      <input type="date" id="pur-cf"><span style="color:var(--t2)">to</span><input type="date" id="pur-ct">
+      <button class="rp-apply" onclick="applyCustom('pur')">Apply</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><h3>Purchase records</h3><small id="pur-ct" style="color:var(--t2)">0 entries</small></div>
+    <div class="tw"><table class="tbl">
+      <thead><tr><th>Date</th><th>Type</th><th class="n">Amount</th><th>Payment</th><th>UTR/Ref</th><th>Notes</th><th>Attachment</th><th>Actions</th></tr></thead>
+      <tbody id="pur-tbody"><tr><td colspan="8" class="notice">No purchases</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     P&L REPORT
+═══════════════════════════════════════════════ -->
+<div class="page" id="pg-pnl">
+  <div class="card no-print" style="margin-bottom:14px">
+    <div class="ch">
+      <div>
+        <h3>P&L Report Generator</h3>
+        <div style="font-size:11px;color:var(--t2);margin-top:2px">Select period and generate a detailed report</div>
+      </div>
+      <button class="btn bf no-print" onclick="window.print()">⬇ Export / Print PDF</button>
+    </div>
+    <div class="rp-wrap" id="pnl-rp" style="margin-bottom:8px"></div>
+    <div class="rp-custom" id="pnl-custom" style="display:none;margin-bottom:8px">
+      <input type="date" id="pnl-cf"><span style="color:var(--t2)">to</span><input type="date" id="pnl-ct">
+      <button class="rp-apply" onclick="applyCustom('pnl')">Apply</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn bo" onclick="setPnlPreset('fy')" style="font-size:11px">Financial Year (Apr–Mar)</button>
+    </div>
+  </div>
+  <div id="pnl-content"><div class="notice" style="padding:40px">Select a period above to generate your P&L report</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     DATA VIEW
+═══════════════════════════════════════════════ -->
+<div class="page" id="pg-view">
+  <div class="card no-print" style="margin-bottom:14px">
+    <div class="ch"><h3>Select date or range to view complete data</h3></div>
+    <div class="rp-wrap" id="view-rp" style="margin-bottom:8px"></div>
+    <div class="rp-custom" id="view-custom" style="display:none">
+      <input type="date" id="view-cf"><span style="color:var(--t2)">to</span><input type="date" id="view-ct">
+      <button class="rp-apply" onclick="applyCustom('view')">Apply</button>
+    </div>
+  </div>
+  <div id="view-content"><div class="notice" style="padding:40px">Select a date or range above</div></div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODALS -->
+<div class="modal-ov" id="edit-sales-modal">
+  <div class="modal-box">
+    <div class="modal-title">Edit Sales Entry</div>
+    <div class="modal-sub" id="edit-sales-date-lbl">Editing —</div>
+    <input type="hidden" id="edit-sales-id">
+    <div class="fg3">
+      <div class="ff"><label>Liquor Sales</label><input type="number" id="edit-s-liquor" placeholder="0"></div>
+      <div class="ff"><label>Express/Local</label><input type="number" id="edit-s-express" placeholder="0"></div>
+      <div class="ff"><label>Token Sales</label><input type="number" id="edit-s-token" placeholder="0"></div>
+    </div>
+    <div class="fg3">
+      <div class="ff"><label>Food Sales</label><input type="number" id="edit-s-food" placeholder="0"></div>
+      <div class="ff"><label>AC Charges</label><input type="number" id="edit-s-ac" placeholder="0"></div>
+      <div class="ff"><label>Other Sales</label><input type="number" id="edit-s-other" placeholder="0"></div>
+    </div>
+    <div class="fg3">
+      <div class="ff"><label>Cash</label><input type="number" id="edit-s-cash" placeholder="0"></div>
+      <div class="ff"><label>Paytm 1</label><input type="number" id="edit-s-p1" placeholder="0"></div>
+      <div class="ff"><label>Paytm 2</label><input type="number" id="edit-s-p2" placeholder="0"></div>
+    </div>
+    <div class="fg2">
+      <div class="ff"><label>Pending/Credit</label><input type="number" id="edit-s-pend" placeholder="0"></div>
+      <div class="ff"><label>Notes</label><input type="text" id="edit-s-notes" placeholder=""></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bo" onclick="closeModal('edit-sales-modal')">Cancel</button>
+      <button class="btn bf" onclick="updateSales()">Update entry</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="edit-exp-modal">
+  <div class="modal-box">
+    <div class="modal-title">Edit Expense</div>
+    <div class="modal-sub" id="edit-exp-date-lbl">Editing —</div>
+    <input type="hidden" id="edit-exp-id">
+    <div class="fg2">
+      <div class="ff"><label>Category</label><input type="text" id="edit-exp-cat" list="edit-exp-cat-list" placeholder="Category"><datalist id="edit-exp-cat-list"></datalist></div>
+      <div class="ff"><label>Sub-category</label><input type="text" id="edit-exp-sub" placeholder="Sub-category / description"></div>
+    </div>
+    <div class="fg2">
+      <div class="ff"><label>Amount (₹)</label><input type="number" id="edit-exp-amt" placeholder="0"></div>
+      <div class="ff"><label>Payment mode</label>
+        <select id="edit-exp-mode">
+          <option value="cash">Cash</option><option value="bank1">Hotel Siruvani</option>
+          <option value="bank2">SW Club</option><option value="upi">UPI</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bo" onclick="closeModal('edit-exp-modal')">Cancel</button>
+      <button class="btn bf" onclick="updateExpense()">Update expense</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="edit-pur-modal">
+  <div class="modal-box">
+    <div class="modal-title">Edit Purchase</div>
+    <div class="modal-sub" id="edit-pur-date-lbl">Editing —</div>
+    <input type="hidden" id="edit-pur-id">
+    <div class="fg2">
+      <div class="ff"><label>Amount (₹)</label><input type="number" id="edit-pur-amt" placeholder="0"></div>
+      <div class="ff"><label>Payment mode</label>
+        <select id="edit-pur-mode">
+          <option value="cash">Cash</option><option value="bank1">Hotel Siruvani (Bank 1)</option>
+          <option value="bank2">SW Club (Bank 2)</option><option value="dd">DD/Cheque</option><option value="upi">UPI</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg2">
+      <div class="ff"><label>UTR / Reference</label><input type="text" id="edit-pur-utr" placeholder="UTR number"></div>
+      <div class="ff"><label>Notes</label><input type="text" id="edit-pur-notes" placeholder="Supplier, invoice..."></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bo" onclick="closeModal('edit-pur-modal')">Cancel</button>
+      <button class="btn bf" onclick="updatePurchase()">Update purchase</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════════════════
+const SURL='https://fnrdgozpefslykhdztqe.supabase.co'
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucmRnb3pwZWZzbHlraGR6dHFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwOTUxNzQsImV4cCI6MjA5MTY3MTE3NH0.KfUih48YWyg9KedKrrpgfhj4S6mHDcc_dGuHwySRkDk'
+const sb=supabase.createClient(SURL,SKEY)
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+const R=n=>'₹'+(Math.round(n)||0).toLocaleString('en-IN')
+const $=id=>document.getElementById(id)
+const fv=id=>parseFloat($(id)?.value)||0
+const sv=id=>$(id)?.value?.trim()||''
+const set=(id,v)=>{const e=$(id);if(e)e.innerHTML=v}
+const td=()=>new Date().toISOString().split('T')[0]
+const ML=m=>({cash:'Cash',bank1:'Hotel Siruvani',bank2:'SW Club',upi:'UPI',dd:'DD/Cheque',rtgs:'RTGS',credit:'Credit'})[m]||m
+
+let _user=null,_appReady=false
+let _sales=[],_expenses=[],_purchases=[],_stock=[]
+let _expCats={}
+let _entryExpRowN=0
+let _confirmCb=null
+let _chartPie=null,_chartBar=null
+
+// Date ranges state per scope
+const _ranges={}
+function getRange(scope){return _ranges[scope]||{from:mStart(),to:td(),label:'This month'}}
+function setRange(scope,from,to,label){_ranges[scope]={from,to,label}}
+function mStart(){const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-01`}
+function filterRange(arr,key,scope){const{from,to}=getRange(scope);return arr.filter(r=>r[key]>=from&&r[key]<=to)}
+
+function toast(msg,col){
+  const t=$('toast');if(!t)return
+  t.textContent=msg;t.style.color=col||'var(--grn)';t.style.opacity='1'
+  clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',3500)
+}
+function closeModal(id){const m=$(id);if(m)m.classList.remove('show')}
+
+// CONFIRM
+function confirm2(title,msg,cb,btnLabel='Delete'){
+  $('confirm-title').textContent=title
+  $('confirm-msg').textContent=msg
+  $('confirm-ok-btn').textContent=btnLabel
+  _confirmCb=cb
+  $('confirm-box').classList.add('show')
+}
+function confirmOk(){$('confirm-box').classList.remove('show');if(_confirmCb)_confirmCb();_confirmCb=null}
+function confirmCancel(){$('confirm-box').classList.remove('show');_confirmCb=null}
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+function aTab(tab,el){
+  document.querySelectorAll('.atab').forEach(b=>b.classList.remove('on'))
+  if(el)el.classList.add('on')
+  ;['login','signup','reset'].forEach(t=>{const p=$('ap-'+t);if(p)p.style.display=t===tab?'':'none'})
+}
+async function doLogin(){
+  const email=sv('l-email'),pass=$('l-pass').value,err=$('login-err')
+  err.style.display='none'
+  if(!email||!pass){err.textContent='Enter email and password';err.style.display='block';return}
+  const btn=$('login-btn');btn.textContent='Signing in...';btn.disabled=true
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass})
+  btn.textContent='Sign in';btn.disabled=false
+  if(error){err.textContent=error.message;err.style.display='block';return}
+  if(data?.user)await showApp(data.user)
+}
+async function doSignup(){
+  const name=sv('s-name'),email=sv('s-email'),pass=$('s-pass').value,pass2=$('s-pass2').value
+  const err=$('signup-err'),ok=$('signup-ok')
+  err.style.display='none';ok.style.display='none'
+  if(!name||!email||!pass){err.textContent='Fill all fields';err.style.display='block';return}
+  if(pass!==pass2){err.textContent='Passwords do not match';err.style.display='block';return}
+  if(pass.length<8){err.textContent='Password min 8 characters';err.style.display='block';return}
+  const btn=$('signup-btn');btn.textContent='Creating...';btn.disabled=true
+  const{error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:window.location.href}})
+  btn.textContent='Create account';btn.disabled=false
+  if(error){err.textContent=error.message;err.style.display='block';return}
+  ok.textContent='Account created! Check your email to confirm, then sign in.';ok.style.display='block'
+  ;['s-name','s-email','s-pass','s-pass2'].forEach(id=>{const e=$(id);if(e)e.value=''})
+}
+async function doReset(){
+  const email=sv('r-email'),err=$('reset-err'),ok=$('reset-ok')
+  err.style.display='none';ok.style.display='none'
+  if(!email){err.textContent='Enter email';err.style.display='block';return}
+  const btn=$('reset-btn');btn.textContent='Sending...';btn.disabled=true
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href})
+  btn.textContent='Send reset link';btn.disabled=false
+  if(error){err.textContent=error.message;err.style.display='block';return}
+  ok.textContent='Reset link sent to '+email+'. Check your inbox.';ok.style.display='block'
+}
+async function doLogout(){
+  await sb.auth.signOut();_user=null;_appReady=false
+  $('auth-wrap').style.display='flex';$('app').style.display='none'
+}
+async function showApp(user){
+  _user=user;$('auth-wrap').style.display='none';$('app').style.display='flex'
+  $('tbd').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
+  if(!_appReady){_appReady=true;await initApp()}
+}
+window.addEventListener('load',async()=>{
+  try{const{data:{session}}=await sb.auth.getSession();if(session?.user)await showApp(session.user)}catch(e){}
+})
+sb.auth.onAuthStateChange((ev,session)=>{
+  if(ev==='SIGNED_OUT'){_user=null;_appReady=false;$('auth-wrap').style.display='flex';$('app').style.display='none'}
+})
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+async function initApp(){
+  try{const{data:p}=await sb.from('profiles').select('full_name').eq('id',_user.id).single()
+    const name=p?.full_name||_user.email?.split('@')[0]||'Admin'
+    $('sb-name').textContent=name;$('sb-av').textContent=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2)
+  }catch(e){$('sb-name').textContent=_user.email?.split('@')[0]||'Admin'}
+
+  const today=td()
+  $('entry-date').value=today
+
+  // Default range = this month
+  const def={from:mStart(),to:today,label:'This month'}
+  ;['dash','sales','exp','pur','pnl','view'].forEach(s=>setRange(s,def.from,def.to,def.label))
+
+  // Init range pickers
+  ;['dash','sales','exp','pur','pnl','view'].forEach(s=>initRP(s))
+
+  // Load all data
+  await loadAll()
+  buildExpCats()
+
+  // Set entry date & auto-fill
+  $('entry-date').value=today
+  autoFillOpeningStock(today)
+
+  renderDash()
+  renderSales()
+  renderExpenses()
+  renderPurchases()
+}
+
+async function loadAll(){
+  try{const{data}=await sb.from('sales_entries').select('*').eq('user_id',_user.id).order('entry_date');_sales=data||[]}catch(e){}
+  try{const{data}=await sb.from('expenses').select('*').eq('user_id',_user.id).order('expense_date');_expenses=data||[]}catch(e){}
+  try{const{data}=await sb.from('purchases').select('*').eq('user_id',_user.id).order('purchase_date');_purchases=data||[]}catch(e){}
+  try{const{data}=await sb.from('stock_entries').select('*').eq('user_id',_user.id).order('entry_date');_stock=data||[]}catch(e){}
+}
+
+function buildExpCats(){
+  _expCats={}
+  _expenses.forEach(e=>{
+    if(!_expCats[e.category])_expCats[e.category]=[]
+    if(e.sub_category&&!_expCats[e.category].includes(e.sub_category))
+      _expCats[e.category].push(e.sub_category)
+  })
+  updExpCatDatalist()
+}
+
+function updExpCatDatalist(){
+  let dl=$('exp-cat-global-list')
+  if(!dl){dl=document.createElement('datalist');dl.id='exp-cat-global-list';document.body.appendChild(dl)}
+  dl.innerHTML=Object.keys(_expCats).map(c=>`<option value="${c}">`).join('')
+  // Also update edit modal datalist
+  const edl=$('edit-exp-cat-list')
+  if(edl)edl.innerHTML=dl.innerHTML
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function go(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'))
+  document.querySelectorAll('.si').forEach(s=>s.classList.remove('on'))
+  $('pg-'+id).classList.add('on');el.classList.add('on')
+  const T={dash:'Dashboard',entry:'Daily Entry',sales:'Sales',expenses:'Expenses',purchases:'Purchases',pnl:'P&L Report',view:'Data View'}
+  $('tbt').textContent=T[id]||id
+  if(id==='dash')renderDash()
+  if(id==='entry'){onEntryDateChange();buildExpCats()}
+  if(id==='sales')renderSales()
+  if(id==='expenses'){renderExpenses();renderExpCharts()}
+  if(id==='purchases')renderPurchases()
+  if(id==='pnl')renderPnl()
+  if(id==='view')renderView()
+}
+
+// ══════════════════════════════════════════════════
+// RANGE PICKER
+// ══════════════════════════════════════════════════
+const RP_PRESETS=[
+  ['today','Today'],['yesterday','Yesterday'],['7d','Last 7 days'],
+  ['week','This week'],['lweek','Last week'],['month','This month'],
+  ['lmonth','Last month'],['all','All time'],['custom','Custom']
+]
+function initRP(scope){
+  const el=$(scope+'-rp');if(!el)return
+  const{label}=getRange(scope)
+  el.innerHTML=RP_PRESETS.map(([v,l])=>
+    `<button class="rp-btn${label===l?' on':''}" onclick="selRP('${scope}','${v}','${l}',this)">${l}</button>`
+  ).join('')
+}
+function selRP(scope,val,label,btn){
+  document.querySelectorAll('#'+scope+'-rp .rp-btn').forEach(b=>b.classList.remove('on'))
+  btn.classList.add('on')
+  const cust=$(scope+'-custom')
+  if(val==='custom'){if(cust)cust.style.display='flex';return}
+  if(cust)cust.style.display='none'
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth()
+  const fmt=d=>d.toISOString().split('T')[0]
+  let from=td(),to=td()
+  const ys=d=>{d.setFullYear(d.getFullYear()-1);return d}
+  if(val==='today'){from=to=td()}
+  else if(val==='yesterday'){const y2=new Date(now);y2.setDate(y2.getDate()-1);from=to=fmt(y2)}
+  else if(val==='7d'){const w=new Date(now);w.setDate(w.getDate()-6);from=fmt(w);to=td()}
+  else if(val==='week'){const d=new Date(now);d.setDate(d.getDate()-d.getDay());from=fmt(d);to=td()}
+  else if(val==='lweek'){const e=new Date(now);e.setDate(e.getDate()-e.getDay()-1);const s=new Date(e);s.setDate(s.getDate()-6);from=fmt(s);to=fmt(e)}
+  else if(val==='month'){from=`${y}-${String(m+1).padStart(2,'0')}-01`;to=td()}
+  else if(val==='lmonth'){const lm=new Date(y,m,0);from=`${lm.getFullYear()}-${String(lm.getMonth()+1).padStart(2,'0')}-01`;to=fmt(lm)}
+  else if(val==='all'){from='2020-01-01';to=td()}
+  setRange(scope,from,to,label)
+  rpChanged(scope)
+}
+function applyCustom(scope){
+  const from=$(scope+'-cf')?.value,to=$(scope+'-ct')?.value
+  if(!from||!to){toast('Select both dates',true);return}
+  setRange(scope,from,to,from+' → '+to)
+  rpChanged(scope)
+}
+function setPnlPreset(type){
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth()
+  let from,to,label
+  if(type==='fy'){
+    // Indian FY: Apr 1 to Mar 31
+    const fyStart=m>=3?y:y-1
+    from=`${fyStart}-04-01`;to=`${fyStart+1}-03-31`;label=`FY ${fyStart}-${fyStart+1}`
+  }
+  setRange('pnl',from,to,label);renderPnl()
+  document.querySelectorAll('#pnl-rp .rp-btn').forEach(b=>b.classList.remove('on'))
+}
+function rpChanged(scope){
+  if(scope==='dash')renderDash()
+  if(scope==='sales')renderSales()
+  if(scope==='exp'){renderExpenses();renderExpCharts()}
+  if(scope==='pur')renderPurchases()
+  if(scope==='pnl')renderPnl()
+  if(scope==='view')renderView()
+}
+
+// ══════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════
+function renderDash(){
+  const fs=filterRange(_sales,'entry_date','dash')
+  const fe=filterRange(_expenses,'expense_date','dash')
+  const fp=filterRange(_purchases,'purchase_date','dash')
+  const {from,to}=getRange('dash')
+
+  const totSales=fs.reduce((a,s)=>a+(s.gross_sales||0),0)
+  const totExp=fe.reduce((a,e)=>a+e.amount,0)
+  const totPur=fp.reduce((a,p)=>a+(p.amount||0),0)
+
+  // COGS from stock
+  const ss=filterRange(_stock,'entry_date','dash').sort((a,b)=>a.entry_date.localeCompare(b.entry_date))
+  const opStk=ss[0]?.opening_stock||0
+  const clStk=ss[ss.length-1]?.closing_stock||0
+  const cogs=opStk+totPur-clStk
+  const grossProfit=totSales-cogs
+  const netProfit=grossProfit-totExp
+  const margin=totSales>0?((netProfit/totSales)*100).toFixed(1):0
+
+  $('dash-krow').innerHTML=`
+    <div class="kc g"><div class="kl">Total Sales</div><div class="kv">${R(totSales)}</div><div class="ks">${fs.length} day(s) · ${getRange('dash').label}</div></div>
+    <div class="kc r"><div class="kl">Total Expenses</div><div class="kv">${R(totExp)}</div><div class="ks">${fe.length} entries</div></div>
+    <div class="kc a"><div class="kl">Total Purchases</div><div class="kv">${R(totPur)}</div><div class="ks">${fp.length} entries</div></div>
+    <div class="kc ${grossProfit>=0?'g':'r'}"><div class="kl">Gross Profit</div><div class="kv">${R(grossProfit)}</div><div class="ks">Sales − COGS</div></div>
+    <div class="kc ${netProfit>=0?'g':'r'}"><div class="kl">Net Profit</div><div class="kv">${R(netProfit)}</div><div class="ks">${margin}% margin</div></div>
+  `
+
+  // Sales breakdown
+  if(fs.length){
+    const s=k=>fs.reduce((a,e)=>a+(e[k]||0),0)
+    $('dash-sales-breakdown').innerHTML=[
+      ['Liquor',s('liquor_sales'),'var(--grn)'],['Express/Local',s('express_sales'),'var(--grn)'],
+      ['Token',s('token_sales'),'var(--t0)'],['Food',s('food_sales'),'var(--t0)'],
+      ['AC Charges',s('ac_charges'),'var(--t1)'],['Cooldrink',s('cooldrink_sales'),'var(--blu)'],
+      ['Cigarette',s('cigarette_sales'),'var(--amb)'],['Other',s('other_sales'),'var(--t2)']
+    ].filter(([,v])=>v>0).map(([l,v,c])=>`<div class="dr"><span class="dl">${l}</span><span class="dv" style="color:${c}">${R(v)}</span></div>`).join('')+
+    `<div class="dr tot"><span class="dl">Total Sales</span><span class="dv g">${R(totSales)}</span></div>`
+  } else $('dash-sales-breakdown').innerHTML='<div class="notice">No sales for this period</div>'
+
+  // Purchases
+  if(fp.length){
+    const liq=fp.filter(p=>p.type==='liquor').reduce((a,p)=>a+p.amount,0)
+    const cool=fp.filter(p=>p.type==='cooldrink').reduce((a,p)=>a+p.amount,0)
+    const cig=fp.filter(p=>p.type==='cigarette').reduce((a,p)=>a+p.amount,0)
+    $('dash-purchases').innerHTML=[['TASMAC Liquor',liq],['Cooldrink',cool],['Cigarette',cig]]
+      .filter(([,v])=>v>0).map(([l,v])=>`<div class="dr"><span class="dl">${l}</span><span class="dv a">${R(v)}</span></div>`).join('')+
+    `<div class="dr tot"><span class="dl">Total Purchases</span><span class="dv a">${R(totPur)}</span></div>`
+  } else $('dash-purchases').innerHTML='<div class="notice">No purchases for this period</div>'
+
+  // Expenses by category
+  if(fe.length){
+    const catMap={}; fe.forEach(e=>{if(!catMap[e.category])catMap[e.category]=0;catMap[e.category]+=e.amount})
+    $('dash-exp-cat').innerHTML=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([c,v])=>
+      `<div class="dr"><span class="dl">${c}</span><span class="dv r">${R(v)}</span></div>`).join('')+
+    `<div class="dr tot"><span class="dl">Total</span><span class="dv r">${R(totExp)}</span></div>`
+  } else $('dash-exp-cat').innerHTML='<div class="notice">No expenses for this period</div>'
+
+  // P&L mini
+  $('dash-pnl').innerHTML=`
+    <div class="dr"><span class="dl">Sales</span><span class="dv g">${R(totSales)}</span></div>
+    <div class="dr"><span class="dl">Opening Stock</span><span class="dv">${R(opStk)}</span></div>
+    <div class="dr"><span class="dl">+ Purchases</span><span class="dv">${R(totPur)}</span></div>
+    <div class="dr"><span class="dl">- Closing Stock</span><span class="dv">${R(clStk)}</span></div>
+    <div class="dr"><span class="dl">= COGS</span><span class="dv r">${R(cogs)}</span></div>
+    <div class="dr"><span class="dl">Gross Profit</span><span class="dv ${grossProfit>=0?'g':'r'}">${R(grossProfit)}</span></div>
+    <div class="dr"><span class="dl">- Expenses</span><span class="dv r">${R(totExp)}</span></div>
+    <div class="dr tot"><span class="dl">Net Profit</span><span class="dv ${netProfit>=0?'g':'r'}" style="font-size:16px">${R(netProfit)}</span></div>`
+}
+
+// ══════════════════════════════════════════════════
+// DAILY ENTRY FLOW
+// ══════════════════════════════════════════════════
+let _entryDate=''
+let _entryPursSaved={}
+
+function onEntryDateChange(){
+  _entryDate=sv('entry-date')||td()
+  $('entry-date-lbl').textContent='Entering data for: '+_entryDate
+  autoFillOpeningStock(_entryDate)
+  gotoStep(1)
+  _entryPursSaved={}
+}
+
+function autoFillOpeningStock(date){
+  const prev=_stock.filter(s=>s.entry_date<date).sort((a,b)=>b.entry_date.localeCompare(a.entry_date))[0]
+  const opEl=$('es-op-stock')
+  if(prev?.closing_stock&&opEl&&!opEl._manual){
+    opEl.value=prev.closing_stock
+    opEl._prevFilled=true
+  }
+  updateStockPreview()
+}
+
+function gotoStep(n){
+  ;[1,2,3,4].forEach(i=>{
+    const s=$('entry-step-'+i);if(s)s.style.display=i===n?'':'none'
+    const t=$('step-tab-'+i);if(t)t.classList.toggle('on',i===n)
+  })
+  if(n===4)updateStockPreview()
+}
+
+function calcEntryTotals(){
+  const liq=fv('es-liquor'),exp=fv('es-express'),tok=fv('es-token'),food=fv('es-food'),ac=fv('es-ac'),oth=fv('es-other'),cool=fv('es-cooldrink'),cig=fv('es-cigarette')
+  const gross=liq+exp+tok+food+ac+oth+cool+cig
+  const cash=fv('es-cash'),p1=fv('es-p1'),p2=fv('es-p2'),pend=fv('es-pend')
+  set('el-gross',R(gross))
+  set('el-coll',R(cash+p1+p2+pend))
+  set('el-split',R(cash)+' · '+R(p1)+' · '+R(p2))
+}
+
+function updateStockPreview(){
+  const op=fv('es-op-stock'),cl=fv('es-cl-stock')
+  const purToday=_purchases.filter(p=>p.purchase_date===_entryDate).reduce((a,p)=>a+p.amount,0)
+  const pendPur=Object.values(_entryPursSaved).reduce((a,v)=>a+v,0)
+  const totalPur=purToday+pendPur
+  set('stock-op-lv',R(op));set('stock-pur-lv',R(totalPur));set('stock-cl-lv',R(cl))
+  set('stock-cogs-lv',R(op+totalPur-cl))
+}
+
+async function saveEntryStep1(){
+  if(!_user?.id){toast('Not logged in',true);return}
+  const date=_entryDate||td()
+  const liq=fv('es-liquor'),exp=fv('es-express'),tok=fv('es-token'),food=fv('es-food'),ac=fv('es-ac'),oth=fv('es-other')
+  const gross=liq+exp+tok+food+ac+oth
+  if(!gross){toast('Enter at least one sales amount',true);return}
+  const btn=$('entry-save-sales-btn');btn.textContent='Saving...';btn.disabled=true
+  const cool=fv('es-cooldrink'),cig=fv('es-cigarette')
+  const{error}=await sb.from('sales_entries').insert({
+    user_id:_user.id,entry_date:date,
+    liquor_sales:liq,express_sales:exp,token_sales:tok,food_sales:food,
+    ac_charges:ac,other_sales:oth,cooldrink_sales:cool,cigarette_sales:cig,
+    gross_sales:liq+exp+tok+food+ac+oth+cool+cig,
+    cash_collected:fv('es-cash'),paytm1_collected:fv('es-p1'),
+    paytm2_collected:fv('es-p2'),pending_receivable:fv('es-pend'),
+    notes:sv('es-notes'),
+    sales_file_url:$('entry-save-sales-btn').dataset.fileUrl||null
+  })
+  btn.textContent='Save sales & continue →';btn.disabled=false
+  if(error){toast('Error: '+error.message,true);return}
+  toast('✓ Sales saved — '+R(gross))
+  await loadAll();renderDash();renderSales()
+  const tab1=$('step-tab-1');if(tab1)tab1.classList.add('done')
+  gotoStep(2)
+  addEntryExpRow()
+}
+
+// ENTRY EXPENSES
+// Default expense categories
+const DEFAULT_EXP_CATS = {
+  'Rent':['Shop rent','Godown','Other'],
+  'Electricity':['EB bill','Generator','Other'],
+  'Salary':['Manager','Staff','Driver','Other'],
+  'Tasmac Auto':['Auto rent','Auto bill','Diesel','Other'],
+  'Admin & Govt':['Commission','License','Tax','Permit','Other'],
+  'General':['Miscellaneous','Sundry','Supplies','Other'],
+  'Cleaning':['Corporation','Materials','Other'],
+  'Repairs':['Equipment','Furniture','Building','AC','Other'],
+  'GST & Bank':['GST','Bank charges','TDS','Other'],
+  'Kitchen':['Groceries','Gas','Vegetables','Other'],
+  'Other':['Other expense']
+}
+
+function getExpCatList(){
+  const merged={}
+  Object.entries(DEFAULT_EXP_CATS).forEach(([c,s])=>merged[c]=[...s])
+  Object.entries(_expCats).forEach(([cat,subs])=>{
+    if(!merged[cat]) merged[cat]=[]
+    subs.forEach(s=>{if(!merged[cat].includes(s))merged[cat].push(s)})
+  })
+  return merged
+}
+
+function addEntryExpRow(){
+  _entryExpRowN++
+  const n=_entryExpRowN
+  const cats=getExpCatList()
+  const catKeys=Object.keys(cats)
+  const modeOpts='<option value="cash">Cash</option><option value="bank1">Hotel Siruvani</option><option value="bank2">SW Club</option><option value="upi">UPI</option>'
+  const catOpts=catKeys.map(c=>'<option value="'+c+'">'+c+'</option>').join('')+'<option value="__new__">+ New category...</option>'
+  const firstSubs=(cats[catKeys[0]]||[]).map(s=>'<option value="'+s+'">'+s+'</option>').join('')
+  const inp=s=>'style="font-size:11px;padding:6px 8px;border:1px solid var(--bd2);border-radius:6px;background:var(--bg1);color:var(--t0);outline:none;font-family:inherit;'+s+'"'
+  const row=document.createElement('div')
+  row.id='entry-er-'+n
+  row.style.cssText='margin-bottom:8px;padding:10px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rs)'
+  row.innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr 85px 110px 28px;gap:8px;align-items:end">'+
+      '<div>'+
+        '<label style="font-size:10px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">Category</label>'+
+        '<select id="eec-'+n+'" onchange="onExpCatChange('+n+')" '+inp('width:100%')+'>'+catOpts+'</select>'+
+        '<input type="text" id="eec-new-'+n+'" placeholder="New category name... press Enter" style="display:none;margin-top:4px;font-size:11px;padding:6px 8px;border:1px solid var(--blu);border-radius:6px;background:var(--bg1);color:var(--t0);outline:none;font-family:inherit;width:100%" onkeydown="if(event.key==='Enter')confirmNewCat('+n+')" onblur="setTimeout(()=>confirmNewCat('+n+'),200)">'+
+      '</div>'+
+      '<div>'+
+        '<label style="font-size:10px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">Sub-category</label>'+
+        '<select id="ees-sel-'+n+'" onchange="onExpSubChange('+n+')" '+inp('width:100%')+'>'+
+          '<option value="">None / skip</option>'+firstSubs+'<option value="__new__">+ New sub...</option>'+
+        '</select>'+
+        '<input type="text" id="ees-new-'+n+'" placeholder="New sub-cat... press Enter" style="display:none;margin-top:4px;font-size:11px;padding:6px 8px;border:1px solid var(--blu);border-radius:6px;background:var(--bg1);color:var(--t0);outline:none;font-family:inherit;width:100%" onkeydown="if(event.key==='Enter')confirmNewSub('+n+')" onblur="setTimeout(()=>confirmNewSub('+n+'),200)">'+
+        '<input type="hidden" id="ees-'+n+'" value="">'+
+      '</div>'+
+      '<div>'+
+        '<label style="font-size:10px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">Amount (₹)</label>'+
+        '<input type="number" id="eea-'+n+'" placeholder="0" oninput="updEntryExpTotal()" '+inp('width:100%;text-align:right')+'>'+
+      '</div>'+
+      '<div>'+
+        '<label style="font-size:10px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">Payment</label>'+
+        '<select id="eem-'+n+'" '+inp('width:100%')+'>'+modeOpts+'</select>'+
+      '</div>'+
+      '<div style="padding-top:16px">'+
+        '<button onclick="rmEntryExpRow('+n+')" style="width:26px;height:26px;background:var(--rbd);color:var(--red);border:1px solid #3a1515;border-radius:5px;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">×</button>'+
+      '</div>'+
+    '</div>'
+  $('entry-exp-rows').appendChild(row)
+}
+
+function onExpCatChange(n){
+  const sel=$('eec-'+n),inp=$('eec-new-'+n)
+  if(sel.value==='__new__'){inp.style.display='block';inp.focus();sel.value=Object.keys(getExpCatList())[0]}
+  else{inp.style.display='none';updExpSubSel(n,sel.value)}
+}
+function confirmNewCat(n){
+  const inp=$('eec-new-'+n),sel=$('eec-'+n)
+  const v=inp.value.trim(); if(!v)return
+  if(!_expCats[v])_expCats[v]=[]
+  updExpCatDatalist()
+  // Add to this dropdown
+  const newOpt=document.createElement('option');newOpt.value=v;newOpt.textContent=v
+  sel.insertBefore(newOpt,sel.querySelector('option[value="__new__"]'))
+  sel.value=v; inp.style.display='none'; inp.value=''
+  updExpSubSel(n,v)
+  toast('Category "'+v+'" added ✓')
+}
+function updExpSubSel(n,cat){
+  const cats=getExpCatList(),subs=cats[cat]||[],sel=$('ees-sel-'+n),hid=$('ees-'+n)
+  if(!sel)return
+  sel.innerHTML='<option value="">None / skip</option>'+subs.map(s=>'<option value="'+s+'">'+s+'</option>').join('')+'<option value="__new__">+ New sub...</option>'
+  if(hid)hid.value=''
+}
+function onExpSubChange(n){
+  const sel=$('ees-sel-'+n),inp=$('ees-new-'+n),hid=$('ees-'+n)
+  if(sel.value==='__new__'){inp.style.display='block';inp.focus();sel.value=''}
+  else{inp.style.display='none';if(hid)hid.value=sel.value}
+}
+function confirmNewSub(n){
+  const inp=$('ees-new-'+n),sel=$('ees-sel-'+n),hid=$('ees-'+n)
+  const cat=$('eec-'+n)?.value||'',v=inp.value.trim(); if(!v)return
+  if(cat&&cat!=='__new__'){if(!_expCats[cat])_expCats[cat]=[];if(!_expCats[cat].includes(v))_expCats[cat].push(v)}
+  const newOpt=document.createElement('option');newOpt.value=v;newOpt.textContent=v
+  sel.insertBefore(newOpt,sel.querySelector('option[value="__new__"]'))
+  sel.value=v; if(hid)hid.value=v; inp.style.display='none'; inp.value=''
+  toast('Sub-category "'+v+'" added ✓')
+}
+function markExpFile(n){const f=$('eef-'+n);if(f?.files[0]){const lbl=$('eef-lbl-'+n);if(lbl){lbl.title=f.files[0].name;lbl.style.color='var(--grn)'}}}
+function updEntrySubList(n){
+  const cat=sv('eec-'+n),dl=$('entry-sub-list-'+n)
+  if(dl)dl.innerHTML=(_expCats[cat]||[]).map(s=>`<option value="${s}">`).join('')
+}
+function rmEntryExpRow(n){const r=$('entry-er-'+n);if(r)r.remove();updEntryExpTotal()}
+function updEntryExpTotal(){
+  let tot=0;document.querySelectorAll('[id^="eea-"]').forEach(el=>tot+=parseFloat(el.value)||0)
+  set('entry-exp-total','₹'+Math.round(tot).toLocaleString('en-IN'))
+}
+
+async function saveEntryStep2(){
+  if(!_user?.id){toast('Not logged in',true);return}
+  const date=_entryDate||td()
+  const rows=[]
+  document.querySelectorAll('[id^="entry-er-"]').forEach(rowEl=>{
+    const n=rowEl.id.replace('entry-er-','')
+    const catSel=$('eec-'+n), catCustom=$('eec-new-'+n)
+    const cat=(catSel?.value&&catSel.value!=='__new__'?catSel.value:(catCustom?.value||'')).trim()
+    const amt=parseFloat($('eea-'+n)?.value)||0
+    if(!amt)return
+    const subHid=$('ees-'+n),subSel=$('ees-sel-'+n)
+    const sub=(subHid?.value||(subSel?.value&&subSel.value!=='__new__'?subSel.value:'')).trim()
+    if(cat&&!_expCats[cat]){_expCats[cat]=[];updExpCatDatalist()}
+    if(cat&&sub&&!(_expCats[cat]||[]).includes(sub)){(_expCats[cat]=_expCats[cat]||[]).push(sub)}
+    rows.push({user_id:_user.id,expense_date:date,category:cat||'General',sub_category:sub||null,amount:amt,payment_mode:sv('eem-'+n)||'cash'})
+  })
+  if(!rows.length){gotoStep(3);return}
+  const btn=$('entry-save-exp-btn');btn.textContent='Saving...';btn.disabled=true
+  const{error}=await sb.from('expenses').insert(rows)
+  btn.textContent='Save & continue →';btn.disabled=false
+  if(error){toast('Error: '+error.message,true);return}
+  const tot=rows.reduce((a,r)=>a+r.amount,0)
+  toast('✓ '+rows.length+' expenses saved — ₹'+Math.round(tot).toLocaleString('en-IN'))
+  await loadAll();buildExpCats();renderDash();renderExpenses()
+  const tab2=$('step-tab-2');if(tab2)tab2.classList.add('done')
+  gotoStep(3)
+}
+
+async function saveEntryPur(type){
+  if(!_user?.id){toast('Not logged in',true);return}
+  const date=_entryDate||td()
+  const amtId={liq:'ep-liq-amt',cool:'ep-cool-amt',cig:'ep-cig-amt'}[type]
+  const amt=fv(amtId)
+  if(!amt){toast('Enter amount',true);return}
+  const modeId={liq:'ep-liq-mode',cool:'ep-cool-mode',cig:'ep-cig-mode'}[type]
+  const notesId={liq:'ep-liq-notes',cool:'ep-cool-notes',cig:'ep-cig-notes'}[type]
+  const utrId={liq:'ep-liq-utr',cool:'ep-cool-ref',cig:'ep-cig-ref'}[type]
+  const typeMap={liq:'liquor',cool:'cooldrink',cig:'cigarette'}
+  const labelMap={liq:'Liquor',cool:'Cooldrink',cig:'Cigarette'}
+  const btnId='ep-save-'+type+'-btn'
+  const btn=$(btnId);btn.textContent='Saving...';btn.disabled=true
+  const{error}=await sb.from('purchases').insert({
+    user_id:_user.id,purchase_date:date,type:typeMap[type],amount:amt,
+    payment_mode:sv(modeId),utr_reference:sv(utrId),notes:sv(notesId)
+  })
+  btn.textContent='Save '+labelMap[type]+' purchase';btn.disabled=false
+  if(error){toast('Error: '+error.message,true);return}
+  toast('✓ '+labelMap[type]+' purchase saved — '+R(amt))
+  $('ep-'+type+'-amt').value='';$('ep-'+type+'-notes').value=''
+  if($(utrId))$(utrId).value=''
+  _entryPursSaved[type]=amt
+  await loadAll();renderDash();renderPurchases()
+  const tab3=$('step-tab-3');if(tab3)tab3.classList.add('done')
+}
+
+async function saveEntryStep4(){
+  if(!_user?.id){toast('Not logged in',true);return}
+  const date=_entryDate||td()
+  const op=fv('es-op-stock'),cl=fv('es-cl-stock')
+  const btn=$('entry-save-stock-btn');btn.textContent='Saving...';btn.disabled=true
+  const{error}=await sb.from('stock_entries').upsert({
+    user_id:_user.id,entry_date:date,opening_stock:op,closing_stock:cl
+  },{onConflict:'user_id,entry_date'})
+  btn.textContent='Save stock & finish ✓';btn.disabled=false
+  if(error){toast('Error: '+error.message,true);return}
+  toast('✓ All done for '+date+' — stock saved')
+  await loadAll();renderDash()
+  const tab4=$('step-tab-4');if(tab4)tab4.classList.add('done')
+  // Reset for next day
+  setTimeout(()=>{
+    ;[1,2,3,4].forEach(i=>{const t=$('step-tab-'+i);if(t)t.classList.remove('done')})
+    gotoStep(1)
+  },2000)
+}
+
+// File upload helper
+async function handleFileUpload(scope, input){
+  if(!input.files[0]||!_user?.id)return
+  const file=input.files[0],ext=file.name.split('.').pop()
+  const path=`${_user.id}/${scope}/${Date.now()}.${ext}`
+  const{data,error}=await sb.storage.from('erp-files').upload(path,file)
+  if(error){toast('Upload error: '+error.message,true);return}
+  const{data:{publicUrl}}=sb.storage.from('erp-files').getPublicUrl(path)
+  if(scope==='sales'){$('entry-save-sales-btn').dataset.fileUrl=publicUrl;$('sales-file-preview').style.display='block';$('sales-file-preview').innerHTML=`<div style="font-size:11px;color:var(--grn)">📎 ${file.name} uploaded ✓</div>`}
+  toast('✓ File uploaded: '+file.name)
+}
+
+// ══════════════════════════════════════════════════
+// SALES RECORDS
+// ══════════════════════════════════════════════════
+function renderSales(){
+  const filtered=filterRange(_sales,'entry_date','sales')
+  $('sales-ct').textContent=filtered.length+' entries'
+  if(!filtered.length){$('sales-tbody').innerHTML='<tr><td colspan="13" class="notice">No sales for this period</td></tr>';return}
+  $('sales-tbody').innerHTML=filtered.slice().reverse().map(e=>`
+    <tr>
+      <td style="font-weight:600">${e.entry_date}</td>
+      <td><span class="badge bb">${e.shift||'Full'}</span></td>
+      <td class="n" style="color:var(--grn)">${R(e.liquor_sales||0)}</td>
+      <td class="n">${R(e.express_sales||0)}</td>
+      <td class="n">${R(e.token_sales||0)}</td>
+      <td class="n">${R(e.food_sales||0)}</td>
+      <td class="n">${R(e.ac_charges||0)}</td>
+      <td class="n">${R(e.other_sales||0)}</td>
+      <td class="n" style="font-weight:700;color:var(--grn)">${R(e.gross_sales||0)}</td>
+      <td class="n">${R(e.cash_collected||0)}</td>
+      <td class="n" style="color:var(--blu)">${R(e.paytm1_collected||0)}</td>
+      <td class="n" style="color:var(--blu)">${R(e.paytm2_collected||0)}</td>
+      <td style="white-space:nowrap">
+        ${e.sales_file_url?`<a href="${e.sales_file_url}" target="_blank" style="font-size:10px;color:var(--blu);margin-right:6px">📎 View</a>`:''}
+        <button onclick="openEditSales('${e.id}')" style="font-size:10px;padding:2px 8px;background:var(--bbd);color:var(--blu);border:1px solid #1d3a6e;border-radius:4px;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>
+        <button onclick="deleteSales('${e.id}','${e.entry_date}')" style="font-size:10px;padding:2px 8px;background:var(--rbd);color:var(--red);border:1px solid #3a1515;border-radius:4px;cursor:pointer;font-family:inherit">Delete</button>
+      </td>
+    </tr>`).join('')
+}
+
+function openEditSales(id){
+  const e=_sales.find(s=>s.id===id);if(!e)return
+  $('edit-sales-id').value=id
+  $('edit-sales-date-lbl').textContent='Editing: '+e.entry_date
+  ;[['edit-s-liquor','liquor_sales'],['edit-s-express','express_sales'],['edit-s-token','token_sales'],
+   ['edit-s-food','food_sales'],['edit-s-ac','ac_charges'],['edit-s-other','other_sales'],
+   ['edit-s-cash','cash_collected'],['edit-s-p1','paytm1_collected'],['edit-s-p2','paytm2_collected'],
+   ['edit-s-pend','pending_receivable'],['edit-s-notes','notes']
+  ].forEach(([id,key])=>{const el=$(id);if(el)el.value=e[key]||''})
+  $('edit-sales-modal').classList.add('show')
+}
+
+async function updateSales(){
+  const id=sv('edit-sales-id');if(!id)return
+  const liq=fv('edit-s-liquor'),exp=fv('edit-s-express'),tok=fv('edit-s-token'),food=fv('edit-s-food'),ac=fv('edit-s-ac'),oth=fv('edit-s-other')
+  const{error}=await sb.from('sales_entries').update({
+    liquor_sales:liq,express_sales:exp,token_sales:tok,food_sales:food,
+    ac_charges:ac,other_sales:oth,gross_sales:liq+exp+tok+food+ac+oth,
+    cash_collected:fv('edit-s-cash'),paytm1_collected:fv('edit-s-p1'),
+    paytm2_collected:fv('edit-s-p2'),pending_receivable:fv('edit-s-pend'),
+    notes:sv('edit-s-notes')
+  }).eq('id',id).eq('user_id',_user.id)
+  if(error){toast('Error: '+error.message,true);return}
+  toast('✓ Sales entry updated')
+  closeModal('edit-sales-modal')
+  await loadAll();renderSales();renderDash()
+}
+
+async function deleteSales(id,date){
+  confirm2('Delete sales entry?','Delete sales for '+date+'? This cannot be undone.',async()=>{
+    const{error}=await sb.from('sales_entries').delete().eq('id',id).eq('user_id',_user.id)
+    if(error){toast('Error: '+error.message,true);return}
+    toast('Sales entry deleted','var(--amb)')
+    await loadAll();renderSales();renderDash()
+  })
+}
+
+// ══════════════════════════════════════════════════
+// EXPENSES RECORDS
+// ══════════════════════════════════════════════════
+function renderExpenses(){
+  const filtered=filterRange(_expenses,'expense_date','exp')
+  $('exp-ct').textContent=filtered.length+' entries'
+  if(!filtered.length){$('exp-list').innerHTML='<div class="notice">No expenses for this period</div>';return}
+  // Group by date
+  const byDate={}
+  filtered.forEach(e=>{if(!byDate[e.expense_date])byDate[e.expense_date]=[];byDate[e.expense_date].push(e)})
+  $('exp-list').innerHTML=Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).map(([date,items])=>{
+    const tot=items.reduce((a,e)=>a+e.amount,0)
+    return`<div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:4px;display:flex;justify-content:space-between">
+        <span>${date}</span><span style="color:var(--red)">${R(tot)}</span>
+      </div>
+      ${items.map(e=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd);font-size:11px">
+          <div>
+            <span style="font-weight:500">${e.category}${e.sub_category?' / <span style="color:var(--t2)">'+e.sub_category+'</span>':''}</span>
+            <span style="font-size:10px;color:var(--t2);margin-left:8px">${ML(e.payment_mode)}</span>
+            ${e.bill_url?`<a href="${e.bill_url}" target="_blank" style="font-size:10px;color:var(--blu);margin-left:8px">📎</a>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="color:var(--red);font-weight:600">${R(e.amount)}</span>
+            <button onclick="openEditExp('${e.id}')" style="font-size:10px;padding:2px 7px;background:var(--bbd);color:var(--blu);border:1px solid #1d3a6e;border-radius:4px;cursor:pointer;font-family:inherit">Edit</button>
+            <button onclick="deleteExp('${e.id}','${date}')" style="font-size:10px;padding:2px 7px;background:var(--rbd);color:var(--red);border:1px solid #3a1515;border-radius:4px;cursor:pointer;font-family:inherit">Del</button>
+          </div>
+        </div>`).join('')}
+    </div>`
+  }).join('')
+}
+
+function openEditExp(id){
+  const e=_expenses.find(x=>x.id===id);if(!e)return
+  $('edit-exp-id').value=id
+  $('edit-exp-date-lbl').textContent='Editing: '+e.expense_date+' — '+e.category
+  $('edit-exp-cat').value=e.category||''
+  $('edit-exp-sub').value=e.sub_category||''
+  $('edit-exp-amt').value=e.amount||''
+  $('edit-exp-mode').value=e.payment_mode||'cash'
+  updExpCatDatalist()
+  $('edit-exp-modal').classList.add('show')
+}
+
+async function updateExpense(){
+  const id=sv('edit-exp-id');if(!id)return
+  const cat=sv('edit-exp-cat')?.trim(),sub=sv('edit-exp-sub')?.trim(),amt=fv('edit-exp-amt')
+  if(!cat||!amt){toast('Category and amount required',true);return}
+  if(cat&&!_expCats[cat]){_expCats[cat]=[];updExpCatDatalist()}
+  if(cat&&sub&&!(_expCats[cat]||[]).includes(sub))_expCats[cat].push(sub)
+  const{error}=await sb.from('expenses').update({category:cat,sub_category:sub||null,amount:amt,payment_mode:sv('edit-exp-mode')}).eq('id',id).eq('user_id',_user.id)
+  if(error){toast('Error: '+error.message,true);return}
+  toast('✓ Expense updated')
+  closeModal('edit-exp-modal')
+  await loadAll();buildExpCats();renderExpenses();renderExpCharts();renderDash()
+}
+
+async function deleteExp(id,date){
+  confirm2('Delete expense?','Delete this expense from '+date+'? Cannot be undone.',async()=>{
+    const{error}=await sb.from('expenses').delete().eq('id',id).eq('user_id',_user.id)
+    if(error){toast('Error: '+error.message,true);return}
+    toast('Expense deleted','var(--amb)')
+    await loadAll();buildExpCats();renderExpenses();renderExpCharts();renderDash()
+  })
+}
+
+function renderExpCharts(){
+  const filtered=filterRange(_expenses,'expense_date','exp')
+  const catMap={}; filtered.forEach(e=>{if(!catMap[e.category])catMap[e.category]=0;catMap[e.category]+=e.amount})
+  const labels=Object.keys(catMap),vals=Object.values(catMap)
+  const colors=['#60a5fa','#22c55e','#f59e0b','#f87171','#a78bfa','#34d399','#fb923c','#e879f9','#38bdf8','#facc15']
+
+  // Destroy old charts
+  if(_chartPie){_chartPie.destroy();_chartPie=null}
+  if(_chartBar){_chartBar.destroy();_chartBar=null}
+
+  if(!labels.length)return
+
+  const pieCtx=$('exp-pie-chart')?.getContext('2d')
+  if(pieCtx){
+    _chartPie=new Chart(pieCtx,{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:colors,borderColor:'#1e2235',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#8d96b8',font:{size:11},padding:12,boxWidth:12}}}}})
+  }
+  const barCtx=$('exp-bar-chart')?.getContext('2d')
+  if(barCtx){
+    _chartBar=new Chart(barCtx,{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:colors,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8d96b8',font:{size:10}},grid:{color:'#2a2f47'}},y:{ticks:{color:'#8d96b8',callback:v=>'₹'+v.toLocaleString('en-IN'),font:{size:10}},grid:{color:'#2a2f47'}}}}})
+  }
+}
+
+// ══════════════════════════════════════════════════
+// PURCHASES RECORDS
+// ══════════════════════════════════════════════════
+function renderPurchases(){
+  const filtered=filterRange(_purchases,'purchase_date','pur')
+  $('pur-ct').textContent=filtered.length+' entries'
+  const typeLabel={liquor:'🏪 TASMAC',cooldrink:'🥤 Cooldrink',cigarette:'🚬 Cigarette'}
+  if(!filtered.length){$('pur-tbody').innerHTML='<tr><td colspan="8" class="notice">No purchases</td></tr>';return}
+  $('pur-tbody').innerHTML=filtered.slice().reverse().map(p=>`
+    <tr>
+      <td style="font-weight:600">${p.purchase_date}</td>
+      <td><span class="badge ${p.type==='liquor'?'bb':p.type==='cooldrink'?'bg-b':'ba-b'}">${typeLabel[p.type]||p.type}</span></td>
+      <td class="n" style="font-weight:700;color:var(--amb)">${R(p.amount||0)}</td>
+      <td><span style="color:var(--blu)">${ML(p.payment_mode)}</span></td>
+      <td style="color:var(--t2);font-size:11px">${p.utr_reference||'—'}</td>
+      <td style="color:var(--t2);font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${p.notes||'—'}</td>
+      <td>${p.payment_screenshot_url?`<a href="${p.payment_screenshot_url}" target="_blank" style="font-size:11px;color:var(--blu)">📎 View</a>`:'—'}</td>
+      <td style="white-space:nowrap">
+        <button onclick="openEditPur('${p.id}')" style="font-size:10px;padding:2px 8px;background:var(--bbd);color:var(--blu);border:1px solid #1d3a6e;border-radius:4px;cursor:pointer;font-family:inherit;margin-right:4px">Edit</button>
+        <button onclick="deletePurchase('${p.id}','${p.purchase_date}')" style="font-size:10px;padding:2px 8px;background:var(--rbd);color:var(--red);border:1px solid #3a1515;border-radius:4px;cursor:pointer;font-family:inherit">Delete</button>
+      </td>
+    </tr>`).join('')
+}
+
+function openEditPur(id){
+  const p=_purchases.find(x=>x.id===id);if(!p)return
+  $('edit-pur-id').value=id
+  $('edit-pur-date-lbl').textContent='Editing: '+p.purchase_date+' — '+p.type
+  $('edit-pur-amt').value=p.amount||''
+  $('edit-pur-mode').value=p.payment_mode||'cash'
+  $('edit-pur-utr').value=p.utr_reference||''
+  $('edit-pur-notes').value=p.notes||''
+  $('edit-pur-modal').classList.add('show')
+}
+
+async function updatePurchase(){
+  const id=sv('edit-pur-id');if(!id)return
+  const{error}=await sb.from('purchases').update({amount:fv('edit-pur-amt'),payment_mode:sv('edit-pur-mode'),utr_reference:sv('edit-pur-utr'),notes:sv('edit-pur-notes')}).eq('id',id).eq('user_id',_user.id)
+  if(error){toast('Error: '+error.message,true);return}
+  toast('✓ Purchase updated')
+  closeModal('edit-pur-modal')
+  await loadAll();renderPurchases();renderDash()
+}
+
+async function deletePurchase(id,date){
+  confirm2('Delete purchase?','Delete purchase from '+date+'? Cannot be undone.',async()=>{
+    const{error}=await sb.from('purchases').delete().eq('id',id).eq('user_id',_user.id)
+    if(error){toast('Error: '+error.message,true);return}
+    toast('Purchase deleted','var(--amb)')
+    await loadAll();renderPurchases();renderDash()
+  })
+}
+
+// ══════════════════════════════════════════════════
+// P&L REPORT
+// ══════════════════════════════════════════════════
+function renderPnl(){
+  const{from,to,label}=getRange('pnl')
+  const fs=filterRange(_sales,'entry_date','pnl')
+  const fe=filterRange(_expenses,'expense_date','pnl')
+  const fp=filterRange(_purchases,'purchase_date','pnl')
+  const fst=filterRange(_stock,'entry_date','pnl').sort((a,b)=>a.entry_date.localeCompare(b.entry_date))
+
+  if(!fs.length&&!fe.length&&!fp.length){
+    $('pnl-content').innerHTML='<div class="notice" style="padding:40px">No data for selected period. Choose a date range above.</div>'
+    return
+  }
+
+  const sum=(arr,k)=>arr.reduce((a,r)=>a+(r[k]||0),0)
+  const totSales=sum(fs,'gross_sales')
+  const totExp=fe.reduce((a,e)=>a+e.amount,0)
+  const totPur=fp.reduce((a,p)=>a+p.amount,0)
+  const opStk=fst[0]?.opening_stock||0, clStk=fst[fst.length-1]?.closing_stock||0
+  const cogs=opStk+totPur-clStk
+  const grossProfit=totSales-cogs
+  const netProfit=grossProfit-totExp
+  const gpm=totSales>0?((grossProfit/totSales)*100).toFixed(1):0
+  const npm=totSales>0?((netProfit/totSales)*100).toFixed(1):0
+
+  // Expense by category
+  const expCatMap={}; fe.forEach(e=>{
+    if(!expCatMap[e.category])expCatMap[e.category]={total:0,subs:{}}
+    expCatMap[e.category].total+=e.amount
+    const s=e.sub_category||'General'
+    if(!expCatMap[e.category].subs[s])expCatMap[e.category].subs[s]=0
+    expCatMap[e.category].subs[s]+=e.amount
+  })
+
+  const purLiq=fp.filter(p=>p.type==='liquor').reduce((a,p)=>a+p.amount,0)
+  const purCool=fp.filter(p=>p.type==='cooldrink').reduce((a,p)=>a+p.amount,0)
+  const purCig=fp.filter(p=>p.type==='cigarette').reduce((a,p)=>a+p.amount,0)
+
+  $('pnl-content').innerHTML=`
+  <div id="pnl-report-body">
+    <!-- HEADER -->
+    <div style="text-align:center;padding:20px 0 16px;border-bottom:2px solid var(--bd2);margin-bottom:20px">
+      <div style="font-size:24px;font-weight:800">Siruvani Bar & Kitchen</div>
+      <div style="font-size:16px;font-weight:600;color:var(--t1);margin-top:4px">Profit & Loss Report</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:4px">Period: ${from} to ${to} &nbsp;|&nbsp; Generated: ${new Date().toLocaleDateString('en-IN')}</div>
+    </div>
+
+    <!-- PRINT PAGE 1: REVENUE + COGS -->
+    <div class="print-section">
+    <div class="g2" style="margin-bottom:14px">
+      <div class="card">
+        <div style="font-size:11px;font-weight:700;color:var(--blu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd2)">1. Sales (Revenue)</div>
+        ${[
+          ['Liquor Sales',sum(fs,'liquor_sales')],['Express / Local Liquor',sum(fs,'express_sales')],
+          ['Token Sales',sum(fs,'token_sales')],['Food Sales',sum(fs,'food_sales')],
+          ['AC Charges',sum(fs,'ac_charges')],['Cooldrink Sales',sum(fs,'cooldrink_sales')],
+          ['Cigarette Sales',sum(fs,'cigarette_sales')],['Other Sales',sum(fs,'other_sales')]
+        ].filter(([,v])=>v>0).map(([l,v])=>`<div class="dr"><span class="dl">${l}</span><span class="dv">${R(v)}</span></div>`).join('')}
+        <div class="dr tot"><span class="dl">TOTAL REVENUE</span><span class="dv g" style="font-size:16px">${R(totSales)}</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:700;color:var(--amb);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd2)">2. Cost of Goods Sold</div>
+        <div class="dr"><span class="dl">Opening Stock (${fst[0]?.entry_date||'—'})</span><span class="dv">${R(opStk)}</span></div>
+        ${purLiq?`<div class="dr"><span class="dl">+ TASMAC Liquor Purchase</span><span class="dv">${R(purLiq)}</span></div>`:''}
+        ${purCool?`<div class="dr"><span class="dl">+ Cooldrink Purchase</span><span class="dv">${R(purCool)}</span></div>`:''}
+        ${purCig?`<div class="dr"><span class="dl">+ Cigarette Purchase</span><span class="dv">${R(purCig)}</span></div>`:''}
+        <div class="dr"><span class="dl">= Sub-total</span><span class="dv">${R(opStk+totPur)}</span></div>
+        <div class="dr"><span class="dl">- Closing Stock (${fst[fst.length-1]?.entry_date||'—'})</span><span class="dv g">- ${R(clStk)}</span></div>
+        <div class="dr tot"><span class="dl">TOTAL COGS</span><span class="dv a" style="font-size:16px">${R(cogs)}</span></div>
+        <div style="background:var(--gbd);border:1px solid var(--gdm);border-radius:var(--rs);padding:12px;margin-top:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:4px">3. GROSS PROFIT</div>
+          <div style="font-size:24px;font-weight:800;color:${grossProfit>=0?'var(--grn)':'var(--red)'}">${R(grossProfit)}</div>
+          <div style="font-size:11px;color:var(--t2);margin-top:2px">Gross Margin: ${gpm}%</div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- PRINT PAGE 2: EXPENSES DETAIL -->
+    <div class="print-section">
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd2)">4. Operating Expenses — Detailed</div>
+      <div class="tw"><table class="tbl">
+        <thead><tr><th>Category</th><th>Sub-category</th><th class="n">Amount</th><th class="n">% of Revenue</th></tr></thead>
+        <tbody>
+          ${Object.entries(expCatMap).sort((a,b)=>b[1].total-a[1].total).map(([cat,obj])=>
+            Object.entries(obj.subs).map(([sub,val],i)=>`
+              <tr>
+                <td style="font-weight:${i===0?700:400};color:${i===0?'var(--t0)':'transparent'}">${i===0?cat:''}</td>
+                <td style="color:var(--t1);padding-left:${i===0?8:20}px">${sub}</td>
+                <td class="n">${R(val)}</td>
+                <td class="n" style="color:var(--t2)">${totSales>0?((val/totSales)*100).toFixed(1)+'%':''}</td>
+              </tr>`).join('')+
+            `<tr style="background:var(--bg2)"><td colspan="2" style="font-weight:700;padding-left:8px">  ${cat} Total</td><td class="n" style="font-weight:700;color:var(--red)">${R(obj.total)}</td><td class="n" style="color:var(--t2)">${totSales>0?((obj.total/totSales)*100).toFixed(1)+'%':''}</td></tr>`
+          ).join('')||'<tr><td colspan="4" class="notice">No expenses</td></tr>'}
+        </tbody>
+        <tfoot><tr><td colspan="2">TOTAL EXPENSES</td><td class="n" style="color:var(--red)">${R(totExp)}</td><td class="n" style="color:var(--t2)">${totSales>0?((totExp/totSales)*100).toFixed(1)+'%':''}</td></tr></tfoot>
+      </table></div>
+    </div>
+    </div>
+
+    <!-- PRINT PAGE 3: NET PROFIT + RATIOS -->
+    <div class="print-section">
+    <div class="g2">
+      <div class="card">
+        <div style="font-size:11px;font-weight:700;color:${netProfit>=0?'var(--grn)':'var(--red)'};text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd2)">5. Net Profit / Loss</div>
+        <div class="dr"><span class="dl">Gross Profit</span><span class="dv g">${R(grossProfit)}</span></div>
+        <div class="dr"><span class="dl">Less: Operating Expenses</span><span class="dv r">- ${R(totExp)}</span></div>
+        <div class="dr tot"><span class="dl" style="font-size:15px">NET PROFIT</span><span class="dv ${netProfit>=0?'g':'r'}" style="font-size:26px">${R(netProfit)}</span></div>
+        <div style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:var(--rs);font-size:10px;color:var(--t2)">
+          COGS = Opening Stock (${R(opStk)}) + Purchases (${R(totPur)}) − Closing Stock (${R(clStk)}) = ${R(cogs)}<br>
+          Gross Profit = Revenue − COGS = ${R(totSales)} − ${R(cogs)} = ${R(grossProfit)}<br>
+          Net Profit = Gross Profit − Expenses = ${R(grossProfit)} − ${R(totExp)} = ${R(netProfit)}
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--bd2)">6. Key Ratios</div>
+        ${[
+          ['Gross Profit Margin',gpm+'%'],
+          ['Net Profit Margin',npm+'%'],
+          ['COGS as % of Revenue',totSales>0?((cogs/totSales)*100).toFixed(1)+'%':'0%'],
+          ['Operating Expense %',totSales>0?((totExp/totSales)*100).toFixed(1)+'%':'0%'],
+          ['Sales days',fs.length+' days'],
+          ['Avg daily sales',R(fs.length?totSales/fs.length:0)],
+          ['Avg daily profit',R(fs.length?netProfit/fs.length:0)],
+          ['Purchase accounts',R(totPur)],
+        ].map(([l,v])=>`<div class="dr"><span class="dl">${l}</span><span class="dv" style="font-weight:600">${v}</span></div>`).join('')}
+      </div>
+    </div>
+    </div>
+  </div>`
+}
+
+// ══════════════════════════════════════════════════
+// DATA VIEW
+// ══════════════════════════════════════════════════
+function renderView(){
+  const{from,to,label}=getRange('view')
+  const fs=filterRange(_sales,'entry_date','view')
+  const fe=filterRange(_expenses,'expense_date','view')
+  const fp=filterRange(_purchases,'purchase_date','view')
+
+  if(!fs.length&&!fe.length&&!fp.length){
+    $('view-content').innerHTML='<div class="notice" style="padding:40px">No data for selected period. Choose a date range above.</div>'
+    return
+  }
+
+  const totSales=fs.reduce((a,s)=>a+(s.gross_sales||0),0)
+  const totExp=fe.reduce((a,e)=>a+e.amount,0)
+  const totPur=fp.reduce((a,p)=>a+p.amount,0)
+
+  const expCatMap={}; fe.forEach(e=>{if(!expCatMap[e.category])expCatMap[e.category]=0;expCatMap[e.category]+=e.amount})
+
+  $('view-content').innerHTML=`
+    <div class="krow">
+      <div class="kc g"><div class="kl">Sales</div><div class="kv">${R(totSales)}</div><div class="ks">${fs.length} day(s)</div></div>
+      <div class="kc r"><div class="kl">Expenses</div><div class="kv">${R(totExp)}</div><div class="ks">${fe.length} entries</div></div>
+      <div class="kc a"><div class="kl">Purchases</div><div class="kv">${R(totPur)}</div><div class="ks">${fp.length} entries</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><h3>Sales breakdown</h3></div>
+        ${fs.length?[
+          ['Liquor',fs.reduce((a,s)=>a+(s.liquor_sales||0),0)],
+          ['Express/Local',fs.reduce((a,s)=>a+(s.express_sales||0),0)],
+          ['Token',fs.reduce((a,s)=>a+(s.token_sales||0),0)],
+          ['Food',fs.reduce((a,s)=>a+(s.food_sales||0),0)],
+          ['AC Charges',fs.reduce((a,s)=>a+(s.ac_charges||0),0)],
+          ['Cooldrink',fs.reduce((a,s)=>a+(s.cooldrink_sales||0),0)],
+          ['Cigarette',fs.reduce((a,s)=>a+(s.cigarette_sales||0),0)],
+          ['Other',fs.reduce((a,s)=>a+(s.other_sales||0),0)],
+        ].filter(([,v])=>v>0).map(([l,v])=>`<div class="dr"><span class="dl">${l}</span><span class="dv g">${R(v)}</span></div>`).join('')+
+        `<div class="dr tot"><span class="dl">Total</span><span class="dv g">${R(totSales)}</span></div>`
+        :'<div class="notice">No sales</div>'}
+      </div>
+      <div>
+        <div class="card">
+          <div class="ch"><h3>Expenses by category</h3></div>
+          ${Object.entries(expCatMap).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="dr"><span class="dl">${c}</span><span class="dv r">${R(v)}</span></div>`).join('')||'<div class="notice">No expenses</div>'}
+          ${fe.length?`<div class="dr tot"><span class="dl">Total</span><span class="dv r">${R(totExp)}</span></div>`:''}
+        </div>
+        <div class="card">
+          <div class="ch"><h3>Purchase accounts</h3></div>
+          ${['liquor','cooldrink','cigarette'].map(t=>{const v=fp.filter(p=>p.type===t).reduce((a,p)=>a+p.amount,0);return v?`<div class="dr"><span class="dl">${{liquor:'TASMAC Liquor',cooldrink:'Cooldrink',cigarette:'Cigarette'}[t]}</span><span class="dv a">${R(v)}</span></div>`:''}).join('')||'<div class="notice">No purchases</div>'}
+          ${fp.length?`<div class="dr tot"><span class="dl">Total</span><span class="dv a">${R(totPur)}</span></div>`:''}
+        </div>
+      </div>
+    </div>
+
+    ${fs.length?`<div class="card">
+      <div class="ch"><h3>Daily sales detail</h3></div>
+      <div class="tw"><table class="tbl">
+        <thead><tr><th>Date</th><th class="n">Liquor</th><th class="n">Express</th><th class="n">Token</th><th class="n">Food</th><th class="n">AC</th><th class="n">Other</th><th class="n">Gross</th><th class="n">Cash</th><th class="n">P1</th><th class="n">P2</th></tr></thead>
+        <tbody>${fs.slice().reverse().map(e=>`<tr>
+          <td>${e.entry_date}</td>
+          <td class="n">${R(e.liquor_sales||0)}</td><td class="n">${R(e.express_sales||0)}</td>
+          <td class="n">${R(e.token_sales||0)}</td><td class="n">${R(e.food_sales||0)}</td>
+          <td class="n">${R(e.ac_charges||0)}</td><td class="n">${R(e.other_sales||0)}</td>
+          <td class="n" style="font-weight:700;color:var(--grn)">${R(e.gross_sales||0)}</td>
+          <td class="n">${R(e.cash_collected||0)}</td>
+          <td class="n" style="color:var(--blu)">${R(e.paytm1_collected||0)}</td>
+          <td class="n" style="color:var(--blu)">${R(e.paytm2_collected||0)}</td>
+        </tr>`).join('')}</tbody>
+        <tfoot><tr><td>Total</td><td colspan="5"></td><td></td><td class="n" style="color:var(--grn)">${R(totSales)}</td><td colspan="3"></td></tr></tfoot>
+      </table></div>
+    </div>`:''}
+
+    ${fe.length?`<div class="card">
+      <div class="ch"><h3>Expense detail</h3></div>
+      <div class="tw"><table class="tbl">
+        <thead><tr><th>Date</th><th>Category</th><th>Sub-category</th><th class="n">Amount</th><th>Payment</th></tr></thead>
+        <tbody>${fe.slice().reverse().map(e=>`<tr>
+          <td>${e.expense_date}</td>
+          <td style="font-weight:500">${e.category}</td>
+          <td style="color:var(--t2)">${e.sub_category||'—'}</td>
+          <td class="n" style="color:var(--red)">${R(e.amount)}</td>
+          <td>${ML(e.payment_mode)}</td>
+        </tr>`).join('')}</tbody>
+        <tfoot><tr><td colspan="3">Total</td><td class="n" style="color:var(--red)">${R(totExp)}</td><td></td></tr></tfoot>
+      </table></div>
+    </div>`:''}
+  `
+}
+
+// ══════════════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-ov.show').forEach(m=>m.classList.remove('show'))
+    $('confirm-box')?.classList.remove('show')
+  }
+})
+</script>
+</body>
+</html>
